@@ -1,0 +1,101 @@
+{% extends "website/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="bg-light border-bottom">
+  <div class="container py-4 py-lg-5">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Acasă" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'products_list' %}">{% trans "Produse" %}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ product.title }}</li>
+      </ol>
+    </nav>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <h1 class="display-6 fw-semibold mb-2">{{ product.title }}</h1>
+        <div class="text-muted">
+          {% if product.brand %}{{ product.brand }}{% endif %}
+          {% if product.category %} · {{ product.category.name }}{% endif %}
+          {% if product.sku %} · {% trans "Cod" %}: <span class="fw-semibold">{{ product.sku }}</span>{% endif %}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <a class="btn btn-primary" href="{% url 'contact' %}?product={{ product.slug }}">
+          {% trans "Cere ofertă" %}
+        </a>
+        <a class="btn btn-outline-secondary" href="{% url 'products_list' %}">
+          ← {% trans "Înapoi" %}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="bg-white border rounded-4 shadow-sm p-4 p-lg-5">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <span class="badge text-bg-light border">{{ product.get_availability_display }}</span>
+          {% if product.lead_time_days %}
+            <span class="text-muted small">{% trans "Lead time estimat" %}: {{ product.lead_time_days }} {% trans "zile" %}</span>
+          {% endif %}
+        </div>
+
+        {% if product.description %}
+          <h2 class="h4 fw-semibold mb-3">{% trans "Descriere" %}</h2>
+          <div class="text-muted mb-4">{{ product.description|linebreaks }}</div>
+        {% endif %}
+
+        {% if product.specs %}
+          <h3 class="h5 fw-semibold mb-3">{% trans "Specificații" %}</h3>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <tbody>
+                {% for k, v in product.specs.items %}
+                  <tr>
+                    <th class="text-nowrap" style="width: 35%;">{{ k }}</th>
+                    <td class="text-muted">{{ v }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+
+        {% if product.datasheet %}
+          <hr class="my-4">
+          <a class="btn btn-outline-primary" href="{{ product.datasheet.url }}" target="_blank" rel="noopener">
+            {% trans "Descarcă fișa tehnică (PDF)" %}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="bg-white border rounded-4 shadow-sm p-4">
+        <div class="fw-semibold mb-2">{% trans "Solicitare ofertă rapidă" %}</div>
+        <div class="text-muted small mb-3">
+          {% trans "Include în mesaj: cantitate, termen dorit, locație livrare și dacă ai cod alternativ." %}
+        </div>
+
+        <div class="p-3 bg-light border rounded-4 mb-3">
+          <div class="fw-semibold">{% trans "Recomandat pentru B2B" %}</div>
+          <div class="text-muted small">{% trans "Prețurile și disponibilitatea se confirmă în funcție de cantitate și lead time." %}</div>
+        </div>
+
+        <a class="btn btn-primary w-100" href="{% url 'contact' %}?product={{ product.slug }}">
+          {% trans "Cere ofertă pentru acest produs" %}
+        </a>
+
+        <a class="btn btn-outline-secondary w-100 mt-2" href="{% url 'products_list' %}">
+          {% trans "Înapoi la catalog" %}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

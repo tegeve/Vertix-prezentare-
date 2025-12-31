@@ -1,0 +1,507 @@
+{% extends "website/base.html" %}
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Portal</h1>
+
+    <div class="d-flex gap-2">
+      {% if request.user.role == "ADMIN" or request.user.role == "MANAGER" %}
+        <a class="btn btn-outline-secondary" href="{% url 'portal_site_settings' %}">Setări site</a>
+      {% endif %}
+
+      {% if request.user.role == "CLIENT" %}
+        <a class="btn btn-primary" href="{% url 'ticket_create' %}">Cere ofertă / Ticket</a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if request.user.role == "ADMIN" or request.user.role == "MANAGER" %}
+
+    <ul class="nav nav-tabs mb-3" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-requests" type="button">
+          Cereri
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-status" type="button">
+          Statusuri
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-tech" type="button">
+          Tehnicieni
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+
+      <!-- ===================================================== -->
+  <!-- TAB: Cereri -->
+<div class="tab-pane fade show active" id="tab-requests">
+  <div class="card p-3 shadow-sm">
+
+    <form id="requestsFilterForm" method="get" class="mb-2">
+      <input type="hidden" name="page" value="1">
+
+      {# păstrează toggle-urile vechi #}
+      <input type="hidden" name="public" value="{% if filter_public %}1{% else %}0{% endif %}">
+      <input type="hidden" name="client" value="{% if filter_client %}1{% else %}0{% endif %}">
+      <input type="hidden" name="intern" value="{% if filter_intern %}1{% else %}0{% endif %}">
+
+      <div class="row g-2 align-items-end">
+
+        <div class="col-12 col-lg-4">
+          <label class="form-label small mb-1">Caută (global)</label>
+          <input class="form-control form-control-sm" name="q"
+                 value="{{ q|default_if_none:'' }}"
+                 placeholder="nr / nume / tel / status / alocat">
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <label class="form-label small mb-1">Tip</label>
+          <select class="form-select form-select-sm" name="type">
+            <option value="" {% if not f_type %}selected{% endif %}>Toate</option>
+            <option value="PUBLIC" {% if f_type == "PUBLIC" %}selected{% endif %}>Public</option>
+            <option value="CLIENT" {% if f_type == "CLIENT" %}selected{% endif %}>Client</option>
+            <option value="INTERN" {% if f_type == "INTERN" %}selected{% endif %}>Intern</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <label class="form-label small mb-1">Nr cerere</label>
+          <input class="form-control form-control-sm" name="nr"
+                 value="{{ f_nr|default_if_none:'' }}"
+                 list="dl-nr" placeholder="T-123 / P-5">
+          <datalist id="dl-nr">
+            {% for s in nr_suggestions %}<option value="{{ s }}"></option>{% endfor %}
+          </datalist>
+        </div>
+
+        <div class="col-12 col-lg-3">
+          <label class="form-label small mb-1">Nume client</label>
+          <input class="form-control form-control-sm" name="name"
+                 value="{{ f_name|default_if_none:'' }}"
+                 list="dl-name" placeholder="Ion Popescu">
+          <datalist id="dl-name">
+            {% for s in name_suggestions %}<option value="{{ s }}"></option>{% endfor %}
+          </datalist>
+        </div>
+
+        <div class="col-6 col-lg-1">
+          <label class="form-label small mb-1">Telefon</label>
+          <input class="form-control form-control-sm" name="phone"
+                 value="{{ f_phone|default_if_none:'' }}"
+                 list="dl-phone" placeholder="07...">
+          <datalist id="dl-phone">
+            {% for s in phone_suggestions %}<option value="{{ s }}"></option>{% endfor %}
+          </datalist>
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <label class="form-label small mb-1">Status</label>
+          <input class="form-control form-control-sm" name="status"
+                 value="{{ f_status|default_if_none:'' }}"
+                 placeholder="Neprocesat / ...">
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <label class="form-label small mb-1">Alocat</label>
+          <input class="form-control form-control-sm" name="assigned"
+                 value="{{ f_assigned|default_if_none:'' }}"
+                 placeholder="tehnician">
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <label class="form-label small mb-1">De la</label>
+          <input type="date" class="form-control form-control-sm"
+                 name="date_from" value="{{ date_from|default_if_none:'' }}">
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <label class="form-label small mb-1">Până la</label>
+          <input type="date" class="form-control form-control-sm"
+                 name="date_to" value="{{ date_to|default_if_none:'' }}">
+        </div>
+
+        <div class="col-12 col-lg-4">
+          <label class="form-label small mb-1">Interval rapid</label>
+          <div class="btn-group btn-group-sm flex-wrap" role="group">
+            <button type="button" class="btn btn-outline-secondary" data-quick="today">Azi</button>
+            <button type="button" class="btn btn-outline-secondary" data-quick="yesterday">Ieri</button>
+            <button type="button" class="btn btn-outline-secondary" data-quick="7d">Ultimele 7 zile</button>
+            <button type="button" class="btn btn-outline-secondary" data-quick="30d">Ultimele 30 zile</button>
+            <button type="button" class="btn btn-outline-secondary" data-quick="this_month">Luna curentă</button>
+            <button type="button" class="btn btn-outline-secondary" data-quick="last_month">Luna trecută</button>
+            <button type="button" class="btn btn-outline-dark" data-quick="">Fără</button>
+          </div>
+          <input type="hidden" name="quick" value="{{ quick|default_if_none:'' }}">
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <label class="form-label small mb-1">Linii/pagină</label>
+          <select class="form-select form-select-sm" name="per_page">
+            {% for n in per_page_choices %}
+              <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      {# toolbar aliniat #}
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+        <div class="text-muted small">
+          Rezultate: <span class="fw-semibold">{{ page_obj.paginator.count }}</span>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <button class="btn btn-outline-primary btn-sm" type="submit">Aplică</button>
+          <a class="btn btn-outline-secondary btn-sm" href="?per_page={{ per_page }}">Reset</a>
+          <a class="btn btn-outline-success btn-sm"
+             href="{% url 'portal_export_xlsx' %}?{{ keep_qs }}">
+            Export Excel
+          </a>
+        </div>
+      </div>
+    </form>
+
+    {# ====================== TABLE ====================== #}
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th>
+              <a class="text-decoration-none"
+                 href="?{{ keep_qs }}&page=1&sort=source&dir={% if sort == 'source' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Tip cerere
+              </a>
+            </th>
+            <th>
+              <a class="text-decoration-none"
+                 href="?{{ keep_qs }}&page=1&sort=nr&dir={% if sort == 'nr' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Nr cerere
+              </a>
+            </th>
+            <th>
+              <a class="text-decoration-none"
+                 href="?{{ keep_qs }}&page=1&sort=client_name&dir={% if sort == 'client_name' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Nume client
+              </a>
+            </th>
+            <th>
+              <a class="text-decoration-none"
+                 href="?{{ keep_qs }}&page=1&sort=client_phone&dir={% if sort == 'client_phone' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Telefon
+              </a>
+            </th>
+            <th>
+              <a class="text-decoration-none"
+                 href="?{{ keep_qs }}&page=1&sort=status_name&dir={% if sort == 'status_name' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Status
+              </a>
+            </th>
+            <th>
+              <a class="text-decoration-none"
+                 href="?{{ keep_qs }}&page=1&sort=assigned_name&dir={% if sort == 'assigned_name' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Alocat
+              </a>
+            </th>
+            <th class="text-end">Acțiuni</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for r in page_obj.object_list %}
+            <tr class="{% if r.source == 'PUBLIC' %}table-warning{% endif %}">
+              <td>
+                {% if r.source == "PUBLIC" %}
+                  <span class="badge bg-warning text-dark">PUBLIC</span>
+                {% elif r.source == "CLIENT" %}
+                  <span class="badge bg-success">CLIENT</span>
+                {% else %}
+                  <span class="badge bg-secondary">INTERN</span>
+                {% endif %}
+              </td>
+              <td class="fw-semibold">{{ r.nr }}</td>
+              <td>{{ r.client_name }}</td>
+              <td>{{ r.client_phone }}</td>
+              <td>{{ r.status_name|default:"Neprocesat" }}</td>
+              <td>{{ r.assigned_name|default:"" }}</td>
+
+              <td class="text-end">
+                {% if r.kind == "ticket" %}
+                  <a class="btn btn-outline-secondary btn-sm" href="{% url 'ticket_edit' r.pk %}">Edit</a>
+                  <form method="post" action="{% url 'ticket_delete' r.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger btn-sm" type="submit"
+                            onclick="return confirm('Sigur ștergi cererea?');">Șterge</button>
+                  </form>
+                {% else %}
+                  <a class="btn btn-outline-secondary btn-sm" href="{% url 'public_request_edit' r.pk %}">Edit</a>
+                  <form method="post" action="{% url 'public_request_delete' r.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger btn-sm" type="submit"
+                            onclick="return confirm('Sigur ștergi cererea publică?');">Șterge</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7" class="text-muted">Nu există înregistrări.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {# ====================== PAGINATION ====================== #}
+    {% if page_obj.paginator.num_pages > 1 %}
+      <nav class="mt-3">
+        <ul class="pagination pagination-sm mb-0">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?{{ keep_qs }}&page={{ page_obj.previous_page_number }}">«</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">«</span></li>
+          {% endif %}
+
+          <li class="page-item disabled">
+            <span class="page-link">Pagina {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+          </li>
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?{{ keep_qs }}&page={{ page_obj.next_page_number }}">»</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">»</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+
+  </div>
+</div>
+
+      <!-- ===================================================== -->
+      <!-- TAB: Statusuri -->
+      <!-- ===================================================== -->
+      <div class="tab-pane fade" id="tab-status">
+        <div class="row g-3">
+          <div class="col-lg-5">
+            <div class="card p-3 shadow-sm">
+              <h2 class="h6 mb-3">Creează status</h2>
+              <form method="post" action="{% url 'status_create_inline' %}">
+                {% csrf_token %}
+                <div class="mb-2">
+                  <label class="form-label">Nume</label>
+                  {{ status_form.name }}
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Ordine</label>
+                  {{ status_form.order }}
+                </div>
+                <div class="form-check form-switch mb-3">
+                  {{ status_form.is_active }} <label class="form-check-label ms-2">Activ</label>
+                </div>
+                <button class="btn btn-primary w-100" type="submit">Salvează</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="col-lg-7">
+            <div class="card p-3 shadow-sm">
+              <h2 class="h6 mb-3">Lista statusuri</h2>
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Nume</th><th>Ordine</th><th>Activ</th><th class="text-end">Acțiuni</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for s in statuses %}
+                      <tr>
+                        <td>{{ s.name }}</td>
+                        <td>{{ s.order }}</td>
+                        <td>{% if s.is_active %}Da{% else %}Nu{% endif %}</td>
+                        <td class="text-end">
+                          <a class="btn btn-outline-secondary btn-sm" href="{% url 'status_update' s.pk %}">Edit</a>
+                          <form method="post" action="{% url 'status_delete' s.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-danger btn-sm" type="submit"
+                                    onclick="return confirm('Sigur ștergi statusul?');">Șterge</button>
+                          </form>
+                        </td>
+                      </tr>
+                    {% empty %}
+                      <tr><td colspan="4" class="text-muted">Nu există statusuri.</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================== -->
+      <!-- TAB: Tehnicieni -->
+      <!-- ===================================================== -->
+      <div class="tab-pane fade" id="tab-tech">
+        <div class="row g-3">
+          <div class="col-lg-5">
+            <div class="card p-3 shadow-sm">
+              <h2 class="h6 mb-3">Adaugă tehnician</h2>
+              <form method="post" action="{% url 'technician_create_inline' %}">
+                {% csrf_token %}
+                <div class="mb-2"><label class="form-label">Nume</label>{{ technician_form.name }}</div>
+                <div class="mb-2"><label class="form-label">Nume companie</label>{{ technician_form.company_name }}</div>
+                <div class="mb-2"><label class="form-label">CIF companie</label>{{ technician_form.company_cif }}</div>
+                <div class="mb-2"><label class="form-label">Email</label>{{ technician_form.email }}</div>
+                <div class="mb-2"><label class="form-label">Telefon</label>{{ technician_form.phone }}</div>
+                <div class="mb-2"><label class="form-label">Adresă</label>{{ technician_form.address }}</div>
+                <div class="mb-2"><label class="form-label">Categorie</label>{{ technician_form.category }}</div>
+                <div class="form-check form-switch mb-3">
+                  {{ technician_form.is_active }} <label class="form-check-label ms-2">Activ</label>
+                </div>
+                <button class="btn btn-primary w-100" type="submit">Salvează</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="col-lg-7">
+            <div class="card p-3 shadow-sm">
+              <h2 class="h6 mb-3">Lista tehnicieni</h2>
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Nume</th><th>Email</th><th>Categorie</th><th>Activ</th><th class="text-end">Acțiuni</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for t in technicians %}
+                      <tr>
+                        <td>{{ t.name }}</td>
+                        <td>{{ t.email }}</td>
+                        <td>{{ t.category|default:"-" }}</td>
+                        <td>{% if t.is_active %}Da{% else %}Nu{% endif %}</td>
+                        <td class="text-end">
+                          <a class="btn btn-outline-secondary btn-sm" href="{% url 'tech_update' t.pk %}">Edit</a>
+                          <form method="post" action="{% url 'tech_delete' t.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-danger btn-sm" type="submit"
+                                    onclick="return confirm('Sigur ștergi tehnicianul?');">Șterge</button>
+                          </form>
+                        </td>
+                      </tr>
+                    {% empty %}
+                      <tr><td colspan="5" class="text-muted">Nu există tehnicieni.</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  {% else %}
+    <!-- pentru CLIENT/TEHNICIAN: păstrezi layout-ul tău -->
+    <div class="card p-3 shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Subiect</th><th>Status</th><th>Asignat</th><th>Creat</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in tickets %}
+              <tr>
+                <td>{{ t.subject }}</td>
+                <td>{{ t.get_status_display }}</td>
+                <td>{{ t.assigned_to.email|default:"-" }}</td>
+                <td>{{ t.created_at|date:"Y-m-d H:i" }}</td>
+                <td class="text-end">
+                  {% if request.user.role == "TEHNICIAN" %}
+                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'ticket_update_status' t.pk %}">Status</a>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5" class="text-muted">Nu există înregistrări.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+
+<script>
+  // Bootstrapize pentru form fields din taburi
+  (function(){
+    document.querySelectorAll("#tab-status input, #tab-tech input, #tab-tech textarea").forEach(function(el){
+      if (el.type === "checkbox") return;
+      el.classList.add("form-control");
+    });
+    document.querySelectorAll("#tab-status select, #tab-tech select").forEach(function(el){
+      el.classList.add("form-select");
+    });
+  })();
+</script>
+
+<script>
+  // Quick ranges:
+  // - setează input hidden "quick"
+  // - golește date_from/date_to
+  // - resetează page=1
+  // - submit
+  (function(){
+    const form = document.getElementById("requestsFilterForm");
+    if(!form) return;
+
+    const quickInput = form.querySelector('input[name="quick"]');
+    const dateFrom = form.querySelector('input[name="date_from"]');
+    const dateTo = form.querySelector('input[name="date_to"]');
+
+    const current = (quickInput && quickInput.value) ? quickInput.value : "";
+
+    form.querySelectorAll('button[data-quick]').forEach((btn)=>{
+      const v = btn.getAttribute("data-quick") || "";
+
+      // highlight pentru cel selectat
+      if(v === current){
+        btn.classList.remove("btn-outline-secondary");
+        btn.classList.add("btn-secondary");
+      }
+
+      btn.addEventListener("click", ()=>{
+        if(quickInput) quickInput.value = v;
+        if(dateFrom) dateFrom.value = "";
+        if(dateTo) dateTo.value = "";
+
+        const page = form.querySelector('input[name="page"]');
+        if(page) page.value = "1";
+
+        form.submit();
+      });
+    });
+
+    // dacă user schimbă manual datele -> quick se golește
+    function clearQuick(){
+      if(quickInput) quickInput.value = "";
+    }
+    if(dateFrom) dateFrom.addEventListener("change", clearQuick);
+    if(dateTo) dateTo.addEventListener("change", clearQuick);
+  })();
+</script>
+
+{% endblock %}

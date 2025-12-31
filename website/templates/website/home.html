@@ -1,0 +1,27 @@
+{% extends "website/base.html" %}
+{% load i18n %}
+{% block title %}Vertix — {% trans "Automatizări industriale" %}{% endblock %}
+
+{% block content %}
+<section class="hero-banner">
+  <div class="hero-overlay"></div>
+
+  <div class="container hero-content">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <h1 class="display-5 fw-bold text-white">
+          {% trans "Automatizări industriale și integrare sisteme" %}
+        </h1>
+        <p class="lead text-white-50">
+          {% trans "Proiectare, implementare și mentenanță pentru linii de producție, roboți, PLC/SCADA și soluții Industry 4.0." %}
+        </p>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <a class="btn btn-primary btn-lg" href="{% url 'contact' %}">{% trans "Cere ofertă" %}</a>
+          <a class="btn btn-outline-light btn-lg" href="{% url 'services_list' %}">{% trans "Vezi servicii" %}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

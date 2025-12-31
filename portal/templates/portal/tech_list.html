@@ -1,0 +1,34 @@
+{% extends "website/base.html" %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Tehnicieni</h1>
+    <a class="btn btn-primary" href="{% url 'tech_create' %}">Adaugă tehnician</a>
+  </div>
+
+  <div class="card p-3 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead><tr><th>Nume</th><th>Email</th><th>Telefon</th><th>Categorie</th><th>Activ</th><th></th></tr></thead>
+        <tbody>
+          {% for t in techs %}
+            <tr>
+              <td>{{ t.name }}</td>
+              <td>{{ t.email }}</td>
+              <td>{{ t.phone|default:"-" }}</td>
+              <td>{{ t.category|default:"-" }}</td>
+              <td>{% if t.is_active %}Da{% else %}Nu{% endif %}</td>
+              <td class="text-end">
+                <a class="btn btn-outline-secondary btn-sm" href="{% url 'tech_update' t.pk %}">Edit</a>
+                <a class="btn btn-outline-danger btn-sm" href="{% url 'tech_delete' t.pk %}">Șterge</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="text-muted">Nu există tehnicieni.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "website/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="bg-light border-bottom">
+  <div class="container py-4 py-lg-5">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-3">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Acasă" %}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{% trans "Blog & Noutăți" %}</li>
+      </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-3">
+      <div>
+        <h1 class="display-6 fw-semibold mb-2">{% trans "Blog & Noutăți" %}</h1>
+        <p class="lead text-muted mb-0">
+          {% trans "Articole, proiecte și know-how din automatizări, retrofit și digitalizare industrială." %}
+        </p>
+      </div>
+
+      <a class="btn btn-outline-secondary" href="{% url 'contact' %}">
+        {% trans "Cere ofertă / Discutăm" %}
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- LIST -->
+<section class="container py-5">
+  <div class="row g-4">
+
+    {% for post in posts %}
+      <div class="col-md-6 col-lg-4">
+        <article class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+
+          <a href="{{ post.get_absolute_url }}" class="text-decoration-none">
+            {% if post.image %}
+              <img src="{{ post.image.url }}"
+                   alt="{{ post.title }}"
+                   class="w-100"
+                   style="height: 210px; object-fit: cover;">
+            {% else %}
+              <div class="bg-light border-bottom d-flex align-items-center justify-content-center text-muted"
+                   style="height: 210px;">
+                Vertix
+              </div>
+            {% endif %}
+          </a>
+
+          <div class="card-body p-4 d-flex flex-column">
+
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+              {% if post.category %}
+                <span class="badge text-bg-dark">{{ post.category.name }}</span>
+              {% endif %}
+
+              <span class="text-muted small">{{ post.published_at|date:"d.m.Y" }}</span>
+
+              {% with post.gallery.all as gallery %}
+                {% if gallery %}
+                  <span class="badge text-bg-light border">📷 {{ gallery|length }}</span>
+                {% endif %}
+              {% endwith %}
+            </div>
+
+            <h2 class="h5 fw-semibold mb-2">
+              <a href="{{ post.get_absolute_url }}" class="text-decoration-none text-dark">
+                {{ post.title }}
+              </a>
+            </h2>
+
+            {% if post.short %}
+              <p class="text-muted mb-3">
+                {{ post.short|truncatechars:140 }}
+              </p>
+            {% else %}
+              <p class="text-muted mb-3">
+                {{ post.content|striptags|truncatechars:140 }}
+              </p>
+            {% endif %}
+
+            <div class="mt-auto d-flex justify-content-between align-items-center">
+              <a href="{{ post.get_absolute_url }}" class="btn btn-sm btn-primary">
+                {% trans "Citește articolul" %}
+              </a>
+
+              {% if post.reading_time %}
+                <span class="small text-muted">{{ post.reading_time }} {% trans "min" %}</span>
+              {% endif %}
+            </div>
+
+          </div>
+        </article>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="alert alert-secondary text-center">
+          {% trans "Momentan nu există articole publicate." %}
+        </div>
+      </div>
+    {% endfor %}
+
+  </div>
+</section>
+
+{% endblock %}

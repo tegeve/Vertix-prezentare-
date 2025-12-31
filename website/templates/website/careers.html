@@ -1,0 +1,143 @@
+{% extends "website/base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="bg-light border-bottom">
+  <div class="container py-5">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <h1 class="display-6 fw-semibold mb-3">
+          {% trans "Cariere la Vertix" %}
+        </h1>
+        <p class="lead text-muted">
+          {% trans "Construim soluții industriale moderne. Căutăm oameni care vor să crească alături de noi." %}
+        </p>
+      </div>
+      <div class="col-lg-5 text-center">
+        <img src="{% static 'img/careers-hero.jpg' %}"
+             class="img-fluid rounded-4 shadow-sm"
+             alt="Cariere Vertix">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DE CE VERTIX -->
+<section class="container py-5">
+  <div class="row mb-4">
+    <div class="col text-center">
+      <h2 class="fw-semibold">{% trans "De ce să lucrezi cu noi?" %}</h2>
+      <p class="text-muted">{% trans "Un mediu tehnic, stabil și orientat spre viitor." %}</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="fw-semibold">🔧 {% trans "Proiecte reale" %}</h5>
+          <p class="text-muted small">
+            {% trans "Lucrezi pe echipamente industriale, automatizări și sisteme utilizate în producție reală." %}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="fw-semibold">📈 {% trans "Dezvoltare profesională" %}</h5>
+          <p class="text-muted small">
+            {% trans "Training, certificări și acces la tehnologii moderne." %}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="fw-semibold">🤝 {% trans "Echipă mică, decizii rapide" %}</h5>
+          <p class="text-muted small">
+            {% trans "Colaborare directă, fără birocrație inutilă." %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- POZIȚII DESCHISE -->
+<section class="bg-light py-5 border-top border-bottom">
+  <div class="container">
+    <h2 class="fw-semibold mb-4 text-center">
+      {% trans "Poziții deschise" %}
+    </h2>
+
+    <div class="row g-4">
+
+      <!-- Job card -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="fw-semibold">
+              {% trans "Tehnician Automatizări Industriale" %}
+            </h5>
+            <p class="text-muted small mb-2">
+              {% trans "Instalare, mentenanță și punere în funcțiune echipamente industriale." %}
+            </p>
+            <ul class="small text-muted">
+              <li>{% trans "Experiență în automatizări / electrică" %}</li>
+              <li>{% trans "Disponibilitate deplasări" %}</li>
+              <li>{% trans "Permis categoria B" %}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Job card -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="fw-semibold">
+              {% trans "Inginer Software Industrial / RPA" %}
+            </h5>
+            <p class="text-muted small mb-2">
+              {% trans "Dezvoltare soluții software pentru automatizarea proceselor." %}
+            </p>
+            <ul class="small text-muted">
+              <li>{% trans "Python / RPA / integrare sisteme" %}</li>
+              <li>{% trans "Gândire analitică" %}</li>
+              <li>{% trans "Experiență industrială – avantaj" %}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- APLICARE -->
+<section class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 text-center">
+      <h2 class="fw-semibold mb-3">
+        {% trans "Aplicare spontană" %}
+      </h2>
+      <p class="text-muted mb-4">
+        {% trans "Nu găsești un rol potrivit? Trimite-ne CV-ul tău." %}
+      </p>
+
+      <a href="mailto:contact@vertix.ro"
+         class="btn btn-primary btn-lg px-4">
+        {% trans "Trimite CV" %}
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

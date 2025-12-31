@@ -1,0 +1,133 @@
+{% extends "website/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="bg-light border-bottom">
+  <div class="container py-5">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Acasă" %}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{% trans "Produse" %}</li>
+      </ol>
+    </nav>
+
+    <h1 class="display-6 fw-semibold mb-2">{% trans "Componente & aparatură industrială" %}</h1>
+    <p class="lead text-muted mb-0">
+      {% trans "Catalog B2B pentru piese, echipamente și consumabile. Solicită disponibilitate și ofertă." %}
+    </p>
+  </div>
+</div>
+
+<div class="container py-5">
+  <!-- Filtre -->
+  <form class="bg-white border rounded-4 shadow-sm p-3 p-lg-4 mb-4">
+    <div class="row g-3 align-items-end">
+      <div class="col-lg-4">
+        <label class="form-label">{% trans "Caută" %}</label>
+        <input class="form-control" name="q" value="{{ selected.q|default:'' }}" placeholder="{% trans 'Produs sau cod (SKU)' %}">
+      </div>
+
+      <div class="col-lg-3">
+        <label class="form-label">{% trans "Categorie" %}</label>
+        <select class="form-select" name="cat">
+          <option value="">{% trans "Toate" %}</option>
+          {% for c in categories %}
+            <option value="{{ c.slug }}" {% if selected.cat == c.slug %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-lg-3">
+        <label class="form-label">{% trans "Brand" %}</label>
+        <select class="form-select" name="brand">
+          <option value="">{% trans "Toate" %}</option>
+          {% for b in brands %}
+            <option value="{{ b.name }}" {% if selected.brand == b.name %}selected{% endif %}>{{ b.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-lg-2">
+        <label class="form-label">{% trans "Disponibilitate" %}</label>
+        <select class="form-select" name="avail">
+          <option value="">{% trans "Toate" %}</option>
+          <option value="IN_STOCK" {% if selected.avail == "IN_STOCK" %}selected{% endif %}>{% trans "În stoc" %}</option>
+          <option value="ORDER" {% if selected.avail == "ORDER" %}selected{% endif %}>{% trans "La comandă" %}</option>
+          <option value="LEAD_TIME" {% if selected.avail == "LEAD_TIME" %}selected{% endif %}>{% trans "Lead time" %}</option>
+          <option value="OUT" {% if selected.avail == "OUT" %}selected{% endif %}>{% trans "Indisponibil" %}</option>
+        </select>
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">{% trans "Aplică filtre" %}</button>
+        <a class="btn btn-outline-secondary" href="{% url 'products_list' %}">{% trans "Resetează" %}</a>
+        <a class="btn btn-outline-primary ms-auto" href="{% url 'contact' %}">{% trans "Cere ofertă" %}</a>
+      </div>
+    </div>
+  </form>
+
+  <!-- Lista produse -->
+  <div class="row g-4">
+    {% for p in products %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4">
+          {% if p.image %}
+            <img src="{{ p.image.url }}" class="card-img-top" alt="{{ p.title }}">
+          {% endif %}
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <h3 class="h5 fw-semibold mb-2">{{ p.title }}</h3>
+              <span class="badge text-bg-light border">{{ p.get_availability_display }}</span>
+            </div>
+
+            <div class="text-muted small mb-2">
+              {% if p.brand %}{{ p.brand }}{% endif %}
+              {% if p.category %} · {{ p.category.name }}{% endif %}
+              {% if p.sku %}<span class="d-block">{% trans "Cod" %}: <span class="fw-semibold">{{ p.sku }}</span></span>{% endif %}
+            </div>
+
+            {% if p.short_description %}
+              <p class="text-muted mb-3">{{ p.short_description }}</p>
+            {% endif %}
+
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="text-primary fw-semibold">{% trans "Detalii" %} →</span>
+              {% if p.lead_time_days %}
+                <span class="text-muted small">{% trans "Lead time" %}: {{ p.lead_time_days }} {% trans "zile" %}</span>
+              {% endif %}
+            </div>
+
+            <a href="{% url 'product_detail' p.slug %}" class="stretched-link" aria-label="{{ p.title }}"></a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="alert alert-light border rounded-4">
+          {% trans "Nu există produse care să corespundă filtrelor." %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- CTA -->
+  <div class="mt-5">
+    <div class="p-4 p-lg-5 bg-white border rounded-4 shadow-sm">
+      <div class="row align-items-center g-3">
+        <div class="col-lg-8">
+          <h3 class="h4 fw-semibold mb-2">{% trans "Nu găsești produsul?" %}</h3>
+          <p class="text-muted mb-0">
+            {% trans "Trimite-ne codul, poza etichetei sau specificațiile. Putem face sourcing pentru componente și echipamente industriale." %}
+          </p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+          <a class="btn btn-primary btn-lg" href="{% url 'contact' %}">
+            {% trans "Solicită disponibilitate" %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

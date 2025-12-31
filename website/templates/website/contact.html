@@ -1,0 +1,182 @@
+{% extends "website/base.html" %}
+{% load i18n %}
+
+{% block title %}Vertix — {% trans "Contact / Cerere" %}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-9 col-xl-8">
+
+      <div class="text-center mb-4">
+        <h1 class="display-6 fw-semibold mb-2">{% trans "Trimite o cerere" %}</h1>
+        <p class="text-muted mb-0">
+          {% trans "Completează datele și atașează fișierele relevante (poze, video, documente). Revenim cât mai curând." %}
+        </p>
+      </div>
+
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} mb-2" role="alert">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" class="card shadow-sm border-0">
+        {% csrf_token %}
+
+
+
+        {% if form.started_at %}
+          {{ form.started_at }}
+        {% endif %}
+
+        {% if form.website %}
+          <div style="display:none;">
+            {{ form.website }}
+          </div>
+        {% endif %}
+
+        {% if form.captcha %}
+          {{ form.captcha }}
+          {% if form.captcha.errors %}
+            <div class="px-4 px-md-5 pt-3">
+              <div class="alert alert-danger mb-0">
+                {{ form.captcha.errors|striptags }}
+              </div>
+            </div>
+          {% endif %}
+        {% endif %}
+
+        <div class="card-body p-4 p-md-5">
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger mb-3">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <!-- Section: Date contact -->
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h2 class="h6 mb-0">{% trans "Date de contact" %}</h2>
+            <span class="badge text-bg-light border">{% trans "Obligatoriu: Email" %}</span>
+          </div>
+          <hr class="mt-2 mb-3">
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label" for="id_email">{% trans "Email" %}</label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <div class="invalid-feedback d-block">{{ form.email.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="id_phone">{% trans "Telefon" %}</label>
+              {{ form.phone }}
+              {% if form.phone.errors %}
+                <div class="invalid-feedback d-block">{{ form.phone.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="id_company">{% trans "Companie" %}</label>
+              {{ form.company }}
+              {% if form.company.errors %}
+                <div class="invalid-feedback d-block">{{ form.company.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="id_company_cif">{% trans "CIF companie" %}</label>
+              {{ form.company_cif }}
+              {% if form.company_cif.errors %}
+                <div class="invalid-feedback d-block">{{ form.company_cif.errors|striptags }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Section: Solicitare -->
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h2 class="h6 mb-0">{% trans "Solicitare" %}</h2>
+            <span class="text-muted small">{% trans "Adaugă cât mai multe detalii" %}</span>
+          </div>
+          <hr class="mt-2 mb-3">
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label" for="id_description">{% trans "Descriere solicitare" %}</label>
+              {{ form.description }}
+              <div class="form-text">
+                {% trans "Include: locație, echipament/linie, problemă, termen, orice cerințe speciale." %}
+              </div>
+              {% if form.description.errors %}
+                <div class="invalid-feedback d-block">{{ form.description.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label" for="id_attachments">
+                {% trans "Atașamente" %} <span class="text-muted">({% trans "max 200MB / fișier" %})</span>
+              </label>
+
+              <input
+                type="file"
+                name="attachments"
+                id="id_attachments"
+                class="form-control"
+                multiple>
+
+              <div class="form-text">
+                {% trans "Acceptăm orice tip: poze, video, PDF, fișiere de setări, log-uri etc." %}
+              </div>
+
+              {% if form.attachments and form.attachments.errors %}
+                <div class="invalid-feedback d-block">{{ form.attachments.errors|striptags }}</div>
+              {% endif %}
+
+              {% if form.attachments and form.attachments.help_text %}
+                <div class="form-text">{{ form.attachments.help_text }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer bg-white border-0 px-4 px-md-5 pb-4">
+          <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+            <button class="btn btn-primary btn-lg" type="submit">
+              {% trans "Trimite cererea" %}
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <p class="text-muted small mt-3 text-center">
+        {% trans "Prin trimiterea cererii, ești de acord să te contactăm pentru clarificări." %}
+      </p>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Bootstrapize inputs
+  (function () {
+    ["id_email","id_phone","id_company","id_company_cif","id_description"].forEach(function(id){
+      const el = document.getElementById(id);
+      if (el) el.classList.add("form-control");
+    });
+  })();
+
+  // started_at pentru anti-bot (completare prea rapidă)
+  (function(){
+    const started = document.querySelector('input[name="started_at"]');
+    if (started && !started.value) {
+      started.value = Math.floor(Date.now() / 1000);
+    }
+  })();
+</script>
+{% endblock %}

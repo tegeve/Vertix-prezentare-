@@ -1,0 +1,122 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div class="container-fluid">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Analytics</h1>
+    <div class="btn-group">
+      <a class="btn btn-outline-secondary {% if days == 7 %}active{% endif %}" href="?days=7">7 zile</a>
+      <a class="btn btn-outline-secondary {% if days == 30 %}active{% endif %}" href="?days=30">30 zile</a>
+      <a class="btn btn-outline-secondary {% if days == 90 %}active{% endif %}" href="?days=90">90 zile</a>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body">
+          <div class="h6 mb-1">Accesări totale ({{ days }} zile)</div>
+          <div class="display-6">{{ total_views }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body">
+          <div class="h6 mb-1">Vizitatori unici ({{ days }} zile)</div>
+          {% if has_visitor_id %}
+            <div class="display-6">{{ unique_visitors }}</div>
+            <div class="text-muted small mb-0">Unic = browser (cookie), expiră la 90 zile.</div>
+          {% else %}
+            <div class="text-muted">Activează visitor_id (migrare + middleware)</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header">Top pagini ({{ days }} zile)</div>
+        <div class="card-body">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Path</th>
+                <th class="text-end">Accesări</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in top_pages %}
+                <tr>
+                  <td><code>{{ row.path }}</code></td>
+                  <td class="text-end">{{ row.total }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="2" class="text-muted">Nu există date.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header">Accesări pe zi ({{ days }} zile)</div>
+        <div class="card-body">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Zi</th>
+                <th class="text-end">Accesări</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in daily_views %}
+                <tr>
+                  <td>{{ row.day }}</td>
+                  <td class="text-end">{{ row.total }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="2" class="text-muted">Nu există date.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <p class="text-muted small mb-0">Notă: logăm doar paginile publice (fără /admin, /static, /media).</p>
+        </div>
+      </div>
+
+      {% if daily_unique %}
+      <div class="card mt-3">
+        <div class="card-header">Vizitatori unici pe zi ({{ days }} zile)</div>
+        <div class="card-body">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Zi</th>
+                <th class="text-end">Unici</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in daily_unique %}
+                <tr>
+                  <td>{{ row.day }}</td>
+                  <td class="text-end">{{ row.unique }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="2" class="text-muted">Nu există date.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

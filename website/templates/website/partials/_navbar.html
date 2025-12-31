@@ -1,0 +1,127 @@
+{% load static %}
+{% load i18n %}
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+  <div class="container">
+    <!-- HOME e mereu activ -->
+<a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+  <img
+    src="{% static 'img/logo-vertix.svg' %}"
+    alt="Vertix"
+    class="navbar-logo"
+    width="44"
+    height="44"
+    loading="eager"
+  >
+</a>
+
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+        {% if site_settings.about_enabled %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'about' %}">{% trans "Despre noi" %}</a>
+          </li>
+        {% endif %}
+
+        {% if site_settings.services_enabled %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'services_list' %}">{% trans "Servicii" %}</a>
+          </li>
+        {% endif %}
+
+        {% if site_settings.projects_enabled %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'projects_list' %}">{% trans "Proiecte" %}</a>
+          </li>
+        {% endif %}
+
+        {% if site_settings.industries_enabled %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'industries' %}">{% trans "Industrii" %}</a>
+          </li>
+        {% endif %}
+
+        {% if site_settings.blog_enabled %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'blog_list' %}">{% trans "Noutăți" %}</a>
+          </li>
+        {% endif %}
+
+        {% if site_settings.careers_enabled %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'careers' %}">{% trans "Cariere" %}</a>
+          </li>
+        {% endif %}
+
+        <!-- Portal (doar autentificat) -->
+        {% if request.user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'portal_dashboard' %}">
+              {% trans "Portal" %}
+            </a>
+          </li>
+        {% endif %}
+
+        <!-- CTA Cere ofertă -->
+        {% if site_settings.contact_enabled %}
+          <li class="nav-item">
+            <a class="btn btn-primary ms-lg-2" href="{% url 'contact' %}">
+              {% trans "Cere ofertă" %}
+            </a>
+          </li>
+        {% endif %}
+
+        <!-- AUTH -->
+        {% if request.user.is_authenticated %}
+          <li class="nav-item dropdown ms-lg-2">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              {{ request.user.email }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                <span class="dropdown-item-text small text-muted">
+                  {% trans "Rol" %}: {{ request.user.role }}
+                </span>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+
+              <li>
+                <a class="dropdown-item" href="{% url 'portal_dashboard' %}">
+                  {% trans "Dashboard" %}
+                </a>
+              </li>
+
+              <li>
+                <form method="post" action="{% url 'logout' %}" class="m-0">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item">
+                    {% trans "Ieșire" %}
+                  </button>
+                </form>
+              </li>
+
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item ms-lg-2">
+            <a class="btn btn-outline-secondary" href="{% url 'login' %}">
+              {% trans "Autentificare" %}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-primary" href="{% url 'register' %}">
+              {% trans "Creare cont" %}
+            </a>
+          </li>
+        {% endif %}
+
+
+      </ul>
+    </div>
+  </div>
+</nav>

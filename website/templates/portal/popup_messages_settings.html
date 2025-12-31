@@ -1,0 +1,83 @@
+{% extends "website/base.html" %}
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Setări · Mesaje Pop-up</h1>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card rounded-4">
+        <div class="card-header bg-white">
+          <strong>Mesaje existente</strong>
+        </div>
+        <div class="card-body">
+          {% if messages_qs %}
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th>Titlu</th>
+                    <th>Activ</th>
+                    <th>Perioadă</th>
+                    <th>Prioritate</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for m in messages_qs %}
+                  <tr>
+                    <td>
+                      <div class="fw-semibold">{{ m.title }}</div>
+                      <div class="text-muted small">{{ m.style }}</div>
+                    </td>
+                    <td>
+                      {% if m.is_enabled %}<span class="badge text-bg-success">DA</span>
+                      {% else %}<span class="badge text-bg-secondary">NU</span>{% endif %}
+                    </td>
+                    <td class="small text-muted">
+                      {{ m.start_at|default:"(fără start)" }} → {{ m.end_at|default:"(fără end)" }}
+                    </td>
+                    <td>{{ m.priority }}</td>
+                    <td class="text-end">
+                      <a class="btn btn-sm btn-outline-primary" href="{% url 'popup_message_edit' m.id %}">Editează</a>
+                      <form class="d-inline" method="post" action="{% url 'popup_message_delete' m.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Ștergi mesajul?')">Șterge</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-muted">Nu există mesaje.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card rounded-4">
+        <div class="card-header bg-white">
+          <strong>Adaugă mesaj nou</strong>
+        </div>
+        <div class="card-body">
+          <form method="post" class="vstack gap-3">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-primary">Salvează</button>
+          </form>
+          <div class="small text-muted mt-3">
+            Tip: dacă “Show once” e bifat, utilizatorul îl vede o singură dată în browser.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

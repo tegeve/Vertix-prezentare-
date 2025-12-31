@@ -1,0 +1,195 @@
+{% extends "website/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<section class="bg-light border-bottom">
+  <div class="container py-4 py-lg-5">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Acasă" %}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{% trans "GDPR / Politica de confidențialitate" %}</li>
+      </ol>
+    </nav>
+
+    <h1 class="display-6 fw-semibold mb-2">{% trans "GDPR / Politica de confidențialitate" %}</h1>
+    <p class="text-muted mb-0">
+      {% trans "Această pagină descrie modul în care Vertix colectează, folosește și protejează datele cu caracter personal, în conformitate cu Regulamentul (UE) 2016/679 (GDPR) și legislația aplicabilă." %}
+    </p>
+  </div>
+</section>
+
+<section class="container py-4 py-lg-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9">
+
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4 p-lg-5">
+
+          <p class="small text-muted mb-4">
+            <strong>{% trans "Ultima actualizare:" %}</strong>
+            <span>{{ last_updated|default:"29.12.2025" }}</span>
+          </p>
+
+          <h2 class="h4 fw-semibold mt-2">{% trans "1. Introducere" %}</h2>
+          <p class="text-muted">
+            {% trans "Această Politică de Confidențialitate explică modul în care Vertix (denumită în continuare „Compania”, „noi”) prelucrează datele cu caracter personal ale utilizatorilor site-ului, în mod legal, echitabil și transparent." %}
+          </p>
+
+          <h2 class="h4 fw-semibold mt-4">{% trans "2. Operatorul de date" %}</h2>
+          <p class="text-muted mb-2">
+            {% trans "Operator de date:" %} <strong>Vertix</strong>
+          </p>
+          <ul class="text-muted">
+            <li>{% trans "Sediu:" %} <span class="text-body">[adresa firmei]</span></li>
+            <li>{% trans "Email:" %} <a href="mailto:[email@vertix.ro]">[email@vertix.ro]</a></li>
+            <li>{% trans "Telefon:" %} <span class="text-body">[număr]</span></li>
+          </ul>
+
+          <h2 class="h4 fw-semibold mt-4">{% trans "3. Ce date colectăm" %}</h2>
+          <p class="text-muted mb-2">{% trans "Putem colecta următoarele categorii de date:" %}</p>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="p-3 border rounded-4 h-100">
+                <h3 class="h6 fw-semibold mb-2">{% trans "Date furnizate direct" %}</h3>
+                <ul class="text-muted mb-0">
+                  <li>{% trans "Nume și prenume" %}</li>
+                  <li>{% trans "Email" %}</li>
+                  <li>{% trans "Telefon" %}</li>
+                  <li>{% trans "Nume companie" %}</li>
+                  <li>{% trans "Mesaje/solicitări (cereri ofertă, tichete)" %}</li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 border rounded-4 h-100">
+                <h3 class="h6 fw-semibold mb-2">{% trans "Date colectate automat" %}</h3>
+                <ul class="text-muted mb-0">
+                  <li>{% trans "Adresă IP" %}</li>
+                  <li>{% trans "Tip browser și dispozitiv" %}</li>
+                  <li>{% trans "Pagini vizitate și durata vizitei" %}</li>
+                  <li>{% trans "Cookie-uri (vezi Politica de cookie-uri)" %}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="h4 fw-semibold mt-4">{% trans "4. Scopurile prelucrării" %}</h2>
+          <ul class="text-muted">
+            <li>{% trans "Răspuns la cereri de ofertă și solicitări" %}</li>
+            <li>{% trans "Furnizarea serviciilor contractate (vânzare, instalare, mentenanță, automatizare, RPA)" %}</li>
+            <li>{% trans "Administrarea conturilor de utilizator (portal clienți)" %}</li>
+            <li>{% trans "Comunicare tehnică sau comercială" %}</li>
+            <li>{% trans "Îmbunătățirea funcționării site-ului" %}</li>
+            <li>{% trans "Respectarea obligațiilor legale" %}</li>
+          </ul>
+
+          <h2 class="h4 fw-semibold mt-4">{% trans "5. Temeiul legal" %}</h2>
+          <p class="text-muted mb-2">{% trans "Prelucrăm datele în baza unuia sau mai multora dintre următoarele temeiuri:" %}</p>
+          <ul class="text-muted">
+            <li>{% trans "Executarea unui contract sau a unei cereri precontractuale" %}</li>
+            <li>{% trans "Consimțământul tău (acolo unde este necesar)" %}</li>
+            <li>{% trans "Obligații legale" %}</li>
+            <li>{% trans "Interes legitim (securitate, prevenirea fraudei, îmbunătățirea serviciilor)" %}</li>
+          </ul>
+
+          <h2 class="h4 fw-semibold mt-4">{% trans "6. Durata stocării" %}</h2>
+          <p class="text-muted">
+            {% trans "Datele sunt păstrate doar pe perioada necesară îndeplinirii scopurilor pentru care au fost colectate sau conform cerințelor legale aplicabile." %}
+          </p>
+          <ul class="text-muted">
+            <li>{% trans "Cereri de ofertă / solicitări:" %} {% trans "până la finalizarea procesului comercial sau conform politicilor interne" %}</li>
+            <li>{% trans "Conturi portal:" %} {% trans "pe durata existenței contului" %}</li>
+            <li>{% trans "Documente contabile:" %} {% trans "conform legislației fiscale" %}</li>
+          </ul>
+
+          <h2 class="h4 fw-semibold mt-4">{% trans "7. Destinatarii datelor" %}</h2>
+          <p class="text-muted mb-2">
+            {% trans "Nu vindem datele tale. Datele pot fi transmise doar către furnizori/parteneri care ne ajută să operăm serviciile, precum și către autorități, atunci când legea o impune." %}
+          </p>
+          <ul class="text-muted">
+            <li>{% trans "Furnizori IT (hosting, email, securitate)" %}</li>
+            <li>{% trans "Autorități publice (în baza obligațiilor legale)" %}</li>
+          </ul>
+
+          <h2 class="h4 fw-semibold mt-4">{% trans "8. Transferuri în afara UE/SEE" %}</h2>
+          <p class="text-muted">
+            {% trans "În mod normal, datele nu sunt transferate în afara Uniunii Europene/SEE. Dacă apar astfel de transferuri, ne asigurăm că există garanții adecvate conform GDPR (de exemplu, clauze contractuale standard)." %}
+          </p>
+
+          <h2 class="h4 fw-semibold mt-4">{% trans "9. Drepturile tale" %}</h2>
+          <p class="text-muted mb-2">
+            {% trans "Conform GDPR, ai următoarele drepturi:" %}
+          </p>
+          <ul class="text-muted">
+            <li>{% trans "Dreptul de acces" %}</li>
+            <li>{% trans "Dreptul la rectificare" %}</li>
+            <li>{% trans "Dreptul la ștergere (dreptul de a fi uitat)" %}</li>
+            <li>{% trans "Dreptul la restricționarea prelucrării" %}</li>
+            <li>{% trans "Dreptul la portabilitatea datelor" %}</li>
+            <li>{% trans "Dreptul de opoziție" %}</li>
+            <li>{% trans "Dreptul de a retrage consimțământul" %}</li>
+            <li>{% trans "Dreptul de a depune plângere la ANSPDCP" %}</li>
+          </ul>
+
+          <div class="alert alert-secondary border-0 rounded-4 mt-3">
+            <div class="d-flex gap-2 align-items-start">
+              <div class="mt-1">
+                <span class="badge text-bg-dark">{% trans "Contact GDPR" %}</span>
+              </div>
+              <div>
+                <p class="mb-1">
+                  {% trans "Pentru exercitarea drepturilor tale, ne poți contacta la:" %}
+                  <a href="mailto:[email@vertix.ro]">[email@vertix.ro]</a>
+                </p>
+                <p class="mb-0 text-muted small">
+                  {% trans "Vom răspunde solicitărilor în termenele prevăzute de GDPR." %}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="h4 fw-semibold mt-4">{% trans "10. Securitatea datelor" %}</h2>
+          <p class="text-muted mb-2">
+            {% trans "Aplicăm măsuri tehnice și organizatorice adecvate pentru protecția datelor, inclusiv:" %}
+          </p>
+          <ul class="text-muted">
+            <li>{% trans "Acces restricționat la date" %}</li>
+            <li>{% trans "Criptare / conexiuni securizate (HTTPS), unde este cazul" %}</li>
+            <li>{% trans "Backup și monitorizare" %}</li>
+            <li>{% trans "Măsuri împotriva accesului neautorizat" %}</li>
+          </ul>
+
+          <h2 class="h4 fw-semibold mt-4">{% trans "11. Cookie-uri" %}</h2>
+          <p class="text-muted">
+            {% trans "Site-ul utilizează cookie-uri pentru funcționare și analiză. Detalii complete sunt disponibile în Politica de cookie-uri." %}
+          </p>
+
+          <h2 class="h4 fw-semibold mt-4">{% trans "12. Modificări ale politicii" %}</h2>
+          <p class="text-muted mb-0">
+            {% trans "Ne rezervăm dreptul de a actualiza această Politică de Confidențialitate. Orice modificare va fi publicată pe această pagină." %}
+          </p>
+
+          <hr class="my-4">
+
+          <div class="d-flex flex-column flex-sm-row gap-2 justify-content-between align-items-sm-center">
+            <p class="small text-muted mb-0">
+              {% trans "Dacă ai întrebări, contactează-ne:" %} <a href="mailto:[email@vertix.ro]">[email@vertix.ro]</a>
+            </p>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'contact' %}">
+              {% trans "Contact" %}
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="mt-3 small text-muted">
+        <strong>Notă:</strong>
+        Înlocuiește câmpurile <span class="text-body">[adresa firmei]</span>, <span class="text-body">[email@vertix.ro]</span>, <span class="text-body">[număr]</span>.
+        Dacă nu ai pagină de Contact cu <code>{% url 'contact' %}</code>, schimbă link-ul sau elimină butonul.
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+{% if dashboard %}
+  <div class="row" style="margin-bottom: 1rem;">
+    <div class="col-md-3">
+      <div class="card"><div class="card-body">
+        <div class="h6 mb-1">{% trans "Mesaje necitite" %}</div>
+        <div class="display-6">{{ dashboard.contact_unread }}</div>
+      </div></div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card"><div class="card-body">
+        <div class="h6 mb-1">{% trans "Mesaje (30 zile)" %}</div>
+        <div class="display-6">{{ dashboard.contacts_30d }}</div>
+      </div></div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card"><div class="card-body">
+        <div class="h6 mb-1">{% trans "Blog total" %}</div>
+        <div class="h2">{{ dashboard.blog_total }}</div>
+        <div class="text-muted small">{% trans "Publicate" %}: {{ dashboard.blog_published }}</div>
+      </div></div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card"><div class="card-body">
+        <div class="h6 mb-1">{% trans "Servicii" %}</div>
+        <div class="h2">{{ dashboard.services_total }}</div>
+      </div></div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card"><div class="card-body">
+        <div class="h6 mb-1">{% trans "Produse" %}</div>
+        <div class="h2">{{ dashboard.products_total }}</div>
+        <div class="text-muted small">{% trans "Active" %}: {{ dashboard.products_active }}</div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-bottom: 1rem;">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">{% trans "Ultimele mesaje" %}</div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0">
+            {% for m in dashboard.recent_contacts %}
+              <li style="padding:.35rem 0; border-bottom:1px solid #eee;">
+                <strong>{{ m.name }}</strong> — {{ m.email }}
+                <div class="small text-muted">{{ m.created_at }}</div>
+              </li>
+            {% empty %}
+              <li class="text-muted">{% trans "Nu există mesaje." %}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">{% trans "Ultimele postări" %}</div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0">
+            {% for p in dashboard.recent_posts %}
+              <li style="padding:.35rem 0; border-bottom:1px solid #eee;">
+                <strong>{{ p.title }}</strong>
+                <div class="small text-muted">{{ p.published_at }}</div>
+              </li>
+            {% empty %}
+              <li class="text-muted">{% trans "Nu există postări." %}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{{ block.super }}
+{% endblock %}

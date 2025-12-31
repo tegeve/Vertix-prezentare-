@@ -1,0 +1,155 @@
+{% extends "website/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<section class="bg-light border-bottom">
+  <div class="container py-4 py-lg-5">
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item">
+          <a href="{% url 'home' %}">{% trans "Acasă" %}</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'services_list' %}">{% trans "Servicii" %}</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          {{ service.title }}
+        </li>
+      </ol>
+    </nav>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-start gap-3">
+        <div class="rounded-4 bg-white border d-flex align-items-center justify-content-center shadow-sm"
+             style="width:56px;height:56px;">
+          {% if service.icon %}
+            <i class="{{ service.icon }} fs-3 text-primary"></i>
+          {% else %}
+            <i class="bi bi-gear fs-3 text-muted"></i>
+          {% endif %}
+        </div>
+
+        <div>
+          <h1 class="display-6 fw-semibold mb-2">{{ service.title }}</h1>
+          {% if service.short %}
+            <p class="lead text-muted mb-0">{{ service.short }}</p>
+          {% else %}
+            <p class="text-muted mb-0">
+              {% trans "Detalii despre acest serviciu, metodologie și opțiuni de ofertare." %}
+            </p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <a class="btn btn-primary" href="{% url 'contact' %}?service={{ service.slug }}">
+          {% trans "Solicită evaluare" %}
+        </a>
+        <a class="btn btn-outline-secondary" href="{% url 'services_list' %}">
+          ← {% trans "Înapoi" %}
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="container py-5">
+  <div class="row g-4">
+
+    <!-- MAIN -->
+    <div class="col-lg-8">
+      <div class="bg-white border rounded-4 shadow-sm p-4 p-lg-5">
+
+        <h2 class="h4 fw-semibold mb-3">{% trans "Descriere" %}</h2>
+
+        {% if service.description %}
+          <div class="text-muted">
+            {{ service.description|linebreaks }}
+          </div>
+        {% else %}
+          <div class="text-muted">
+            {% trans "Descrierea acestui serviciu va fi adăugată în curând." %}
+          </div>
+        {% endif %}
+
+        <hr class="my-4">
+
+        <h3 class="h5 fw-semibold mb-3">{% trans "Cum lucrăm" %}</h3>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="border rounded-4 p-3 h-100">
+              <div class="fw-semibold">{% trans "1) Constatare & diagnostic" %}</div>
+              <div class="text-muted small">{% trans "Analizăm situația și identificăm cauza." %}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="border rounded-4 p-3 h-100">
+              <div class="fw-semibold">{% trans "2) Propunere soluție" %}</div>
+              <div class="text-muted small">{% trans "Pași clari, estimare și timeline." %}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="border rounded-4 p-3 h-100">
+              <div class="fw-semibold">{% trans "3) Implementare & testare" %}</div>
+              <div class="text-muted small">{% trans "Intervenim și validăm funcționarea." %}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="border rounded-4 p-3 h-100">
+              <div class="fw-semibold">{% trans "4) Raport & prevenție" %}</div>
+              <div class="text-muted small">{% trans "Documentăm și recomandăm măsuri pentru uptime." %}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex flex-wrap gap-2">
+          <a class="btn btn-primary" href="{% url 'contact' %}?service={{ service.slug }}">
+            {% trans "Cere ofertă pentru acest serviciu" %}
+          </a>
+          <a class="btn btn-outline-secondary" href="{% url 'services_list' %}">
+            {% trans "Vezi toate serviciile" %}
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="col-lg-4">
+      <div class="bg-white border rounded-4 shadow-sm p-4">
+        <div class="fw-semibold mb-2">{% trans "Pentru o evaluare rapidă" %}</div>
+        <div class="text-muted small mb-3">
+          {% trans "În mesaj, include: model/serie, simptome, context (când apare), poze cu eticheta/panoul și urgența." %}
+        </div>
+
+        <div class="p-3 bg-light border rounded-4 mb-3">
+          <div class="fw-semibold">{% trans "Obiectiv" %}</div>
+          <div class="text-muted small">
+            {% trans "Downtime minim și o soluție robustă, documentată." %}
+          </div>
+        </div>
+
+        <div class="p-3 bg-light border rounded-4 mb-3">
+          <div class="fw-semibold">{% trans "Ce primești" %}</div>
+          <ul class="text-muted small mb-0">
+            <li>{% trans "Diagnoză și recomandare" %}</li>
+            <li>{% trans "Estimare + pași de implementare" %}</li>
+            <li>{% trans "Raport final (când e cazul)" %}</li>
+          </ul>
+        </div>
+
+        <a class="btn btn-primary w-100" href="{% url 'contact' %}?service={{ service.slug }}">
+          {% trans "Solicită intervenție" %}
+        </a>
+
+        <a class="btn btn-outline-secondary w-100 mt-2" href="{% url 'services_list' %}">
+          {% trans "Înapoi la servicii" %}
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

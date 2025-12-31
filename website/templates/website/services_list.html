@@ -1,0 +1,154 @@
+{% extends "website/base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="bg-light border-bottom">
+  <div class="container py-5">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-8">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-2">
+            <li class="breadcrumb-item">
+              <a href="{% url 'home' %}">{% trans "Acasă" %}</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+              {% trans "Servicii" %}
+            </li>
+          </ol>
+        </nav>
+
+        <h1 class="display-6 fw-semibold mb-3">
+          {% trans "Servicii industriale pentru continuitatea producției" %}
+        </h1>
+
+        <p class="lead text-muted mb-4">
+          {% trans "Echipă de ingineri și specialiști cu experiență în industrie. Reparații electronice și mecanice, mentenanță, retrofit și automatizări — cu focus pe downtime minim și fiabilitate." %}
+        </p>
+
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-primary btn-lg" href="{% url 'contact' %}">
+            {% trans "Solicită evaluare" %}
+          </a>
+          <a class="btn btn-outline-secondary btn-lg" href="#lista-servicii">
+            {% trans "Vezi serviciile" %}
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="bg-white border rounded-4 shadow-sm p-4">
+          <div class="fw-semibold mb-2">{% trans "De ce Vertix" %}</div>
+          <ul class="text-muted mb-0">
+            <li>{% trans "Experiență practică în industrie" %}</li>
+            <li>{% trans "Diagnostic + testare + raportare" %}</li>
+            <li>{% trans "Intervenții orientate pe uptime" %}</li>
+            <li>{% trans "Soluții complete (service → retrofit → automatizare)" %}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LISTA SERVICII -->
+<section class="container py-5" id="lista-servicii">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+      <h2 class="h3 fw-semibold mb-1">{% trans "Serviciile noastre" %}</h2>
+      <div class="text-muted">
+        {% trans "Selectează un serviciu pentru detalii, pași de lucru și opțiuni de ofertare." %}
+      </div>
+    </div>
+
+    <a class="btn btn-outline-primary" href="{% url 'contact' %}">
+      {% trans "Cere ofertă" %}
+    </a>
+  </div>
+
+  <div class="row g-4">
+    {% for service in services %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 position-relative">
+
+          <div class="card-body p-4 d-flex flex-column">
+
+            <!-- Header -->
+            <div class="d-flex align-items-start gap-3 mb-3">
+              <div class="rounded-4 bg-light border d-flex align-items-center justify-content-center"
+                   style="width:44px;height:44px;">
+                {% if service.icon %}
+                  <i class="{{ service.icon }} fs-4 text-primary"></i>
+                {% else %}
+                  <i class="bi bi-gear fs-4 text-muted"></i>
+                {% endif %}
+              </div>
+
+              <div class="flex-grow-1">
+                <h3 class="h5 fw-semibold mb-1">{{ service.title }}</h3>
+              </div>
+            </div>
+
+            <!-- Summary -->
+            {% if service.short %}
+              <p class="text-muted mb-4">{{ service.short }}</p>
+            {% else %}
+              <p class="text-muted mb-4">
+                {{ service.description|truncatechars:150 }}
+              </p>
+            {% endif %}
+
+            <!-- Footer -->
+            <div class="mt-auto d-flex justify-content-between align-items-center">
+              <span class="badge text-bg-light border">
+                {% trans "Detalii disponibile" %}
+              </span>
+
+              <a class="btn btn-sm btn-outline-primary"
+                 href="{{ service.get_absolute_url }}">
+                {% trans "Detalii" %} →
+              </a>
+            </div>
+
+            <!-- Click pe toată cardul -->
+            <a href="{{ service.get_absolute_url }}"
+               class="stretched-link"
+               aria-label="{{ service.title }}"></a>
+
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="alert alert-light border rounded-4">
+          {% trans "Momentan nu există servicii afișate." %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- CTA FINAL -->
+  <div class="mt-5">
+    <div class="p-4 p-lg-5 bg-white border rounded-4 shadow-sm">
+      <div class="row align-items-center g-3">
+        <div class="col-lg-8">
+          <h3 class="h4 fw-semibold mb-2">
+            {% trans "Ai un echipament oprit sau instabil?" %}
+          </h3>
+          <p class="text-muted mb-0">
+            {% trans "Trimite modelul, simptomele și urgența. Revenim rapid cu pași de diagnostic și propunere de soluție." %}
+          </p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+          <a class="btn btn-primary btn-lg" href="{% url 'contact' %}">
+            {% trans "Solicită intervenție" %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+{% endblock %}

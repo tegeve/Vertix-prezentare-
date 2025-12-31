@@ -1,0 +1,101 @@
+{% extends "website/base.html" %}
+{% load i18n %}
+
+{% block title %}Vertix — {% trans "Creare cont" %}{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 560px;">
+  <div class="text-center mb-4">
+    <h1 class="h3 fw-semibold mb-2">{% trans "Creare cont" %}</h1>
+    <p class="text-muted mb-0">{% trans "Completează datele pentru a crea un cont de client." %}</p>
+  </div>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" class="card shadow-sm border-0">
+    {% csrf_token %}
+
+    <div class="card-body p-4 p-md-5">
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger mb-3">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label class="form-label" for="id_email">{% trans "Email" %}</label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div class="invalid-feedback d-block">{{ form.email.errors|striptags }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="id_company_name">{% trans "Nume companie" %}</label>
+        {{ form.company_name }}
+        {% if form.company_name.errors %}
+          <div class="invalid-feedback d-block">{{ form.company_name.errors|striptags }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="id_company_cif">{% trans "CIF" %}</label>
+        {{ form.company_cif }}
+        {% if form.company_cif.errors %}
+          <div class="invalid-feedback d-block">{{ form.company_cif.errors|striptags }}</div>
+        {% endif %}
+      </div>
+
+      <hr class="my-4">
+
+      <div class="mb-3">
+        <label class="form-label" for="id_password1">{% trans "Parolă" %}</label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}
+          <div class="invalid-feedback d-block">{{ form.password1.errors|striptags }}</div>
+        {% endif %}
+        {% if form.password1.help_text %}
+          <div class="form-text">{{ form.password1.help_text|safe }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-0">
+        <label class="form-label" for="id_password2">{% trans "Confirmă parola" %}</label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}
+          <div class="invalid-feedback d-block">{{ form.password2.errors|striptags }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card-footer bg-white border-0 px-4 px-md-5 pb-4">
+      <button class="btn btn-primary btn-lg w-100" type="submit">
+        {% trans "Creează cont" %}
+      </button>
+
+      <div class="small text-muted mt-3 text-center">
+        {% trans "Ai deja cont?" %}
+        <a href="{% url 'login' %}" class="text-decoration-none">{% trans "Autentificare" %}</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Bootstrapize inputs (safe)
+  (function () {
+    ["id_email","id_company_name","id_company_cif","id_password1","id_password2"].forEach(function(id){
+      const el = document.getElementById(id);
+      if (el) el.classList.add("form-control");
+    });
+  })();
+</script>
+{% endblock %}

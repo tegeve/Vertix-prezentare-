@@ -1,0 +1,105 @@
+{% extends "website/base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="bg-light border-bottom">
+  <div class="container py-5">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-8">
+        <h1 class="display-6 fw-semibold mb-3">{% trans "Industrial / Fabrici" %}</h1>
+        <p class="lead text-muted mb-4">
+          {% trans "Ne axăm pe vânzare, reparații, instalare/retrofit, automatizare și RPA pentru mediul industrial — cu focus pe reducerea downtime-ului și creșterea productivității." %}
+        </p>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <a class="btn btn-primary btn-lg" href="{% url 'contact' %}">{% trans "Cere ofertă" %}</a>
+          <a class="btn btn-outline-secondary btn-lg" href="{% url 'services_list' %}">{% trans "Vezi servicii" %}</a>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="p-4 bg-white border rounded-4 shadow-sm">
+          <div class="small text-muted mb-2">{% trans "Livrăm end-to-end" %}</div>
+          <ul class="mb-0">
+            <li>{% trans "Vânzare & livrare echipamente" %}</li>
+            <li>{% trans "Service: reparații + mentenanță" %}</li>
+            <li>{% trans "Retrofit & punere în funcțiune" %}</li>
+            <li>{% trans "Automatizări + RPA" %}</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRII (VERTICALE) -->
+<section class="container py-5">
+  <div class="mb-4">
+    <h2 class="fw-semibold mb-2">{% trans "Industrii în care lucrăm" %}</h2>
+    <p class="text-muted mb-0">{% trans "Exemple de domenii industriale unde livrăm soluții și intervenții." %}</p>
+  </div>
+
+  <div class="row g-4">
+    {% for i in industries %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4">
+          <div class="card-body p-4">
+            <h5 class="fw-semibold mb-2">{{ i.title }}</h5>
+            <p class="text-muted mb-0">{{ i.short }}</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- PROBLEME REZOLVATE -->
+<section class="bg-light border-top border-bottom">
+  <div class="container py-5">
+    <div class="mb-4">
+      <h2 class="fw-semibold mb-2">{% trans "Ce rezolvăm în fabrică" %}</h2>
+      <p class="text-muted mb-0">{% trans "Focus pe impact operațional, nu pe promisiuni." %}</p>
+    </div>
+
+    <div class="row g-3">
+      {% for p in pains %}
+        <div class="col-md-6 col-lg-4">
+          <div class="p-4 bg-white rounded-4 shadow-sm h-100">
+            <div class="fw-semibold">{{ p.title }}</div>
+            <div class="text-muted">{{ p.desc }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- SERVICII RECOMANDATE (link către pagina de servicii / detalii) -->
+<section class="container py-5">
+  <div class="mb-4">
+    <h2 class="fw-semibold mb-2">{% trans "Servicii folosite frecvent în industrial" %}</h2>
+    <p class="text-muted mb-0">
+      {% trans "Detaliile sunt pe pagina de Servicii — aici îți arătăm doar ce se potrivește tipic pentru fabrici." %}
+    </p>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2">
+    {% for s in service_links %}
+      <a class="btn btn-outline-primary" href="{{ s.url }}">{{ s.label }}</a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="bg-dark text-white">
+  <div class="container py-5 text-center">
+    <h2 class="fw-semibold mb-3">{% trans "Ai o linie care necesită intervenție sau modernizare?" %}</h2>
+    <p class="text-white-50 mb-4">{% trans "Trimite-ne câteva detalii și revenim cu o propunere clară." %}</p>
+    <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">{% trans "Cere ofertă" %}</a>
+  </div>
+</section>
+
+{% endblock %}

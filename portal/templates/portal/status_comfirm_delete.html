@@ -1,0 +1,15 @@
+{% extends "website/base.html" %}
+{% block content %}
+<div class="container py-4" style="max-width:720px;">
+  <div class="card p-4 shadow-sm">
+    <h1 class="h5 mb-3">Ștergi statusul “{{ obj.name }}”?</h1>
+    <form method="post">
+      {% csrf_token %}
+      <div class="d-flex gap-2 justify-content-end">
+        <a class="btn btn-outline-secondary" href="{% url 'status_list' %}">Renunță</a>
+        <button class="btn btn-danger" type="submit">Șterge</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

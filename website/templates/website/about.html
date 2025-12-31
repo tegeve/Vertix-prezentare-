@@ -1,0 +1,170 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block content %}
+
+{# HERO #}
+<section class="bg-light border-bottom">
+  <div class="container py-5">
+    <div class="row align-items-center g-4">
+
+      <div class="col-lg-6">
+        <h1 class="display-6 fw-semibold mb-3">{{ about.hero_title }}</h1>
+        <p class="lead text-muted mb-4">{{ about.hero_subtitle }}</p>
+
+      </div>
+
+      <div class="col-lg-6">
+        {% if about.hero_image %}
+          <img src="{{ about.hero_image.url }}" class="img-fluid rounded-4 shadow-sm" alt="Vertix — Despre noi">
+        {% else %}
+          <div class="ratio ratio-16x9 bg-white border rounded-4 d-flex align-items-center justify-content-center">
+            <span class="text-muted">Încarcă o imagine din Admin (Hero)</span>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{# POVESTE + IMAGINE #}
+<section>
+  <div class="container py-5">
+    <div class="row g-4 align-items-center">
+
+      <div class="col-lg-6">
+        <h2 class="h3 fw-semibold mb-3">{{ about.story_title }}</h2>
+        <p class="text-muted mb-0" style="white-space: pre-line;">{{ about.story_text }}</p>
+      </div>
+
+      <div class="col-lg-6">
+        {% if about.story_image %}
+          <img src="{{ about.story_image.url }}" class="img-fluid rounded-4 shadow-sm" alt="Povestea noastră">
+        {% else %}
+          <div class="ratio ratio-16x9 bg-light border rounded-4 d-flex align-items-center justify-content-center">
+            <span class="text-muted">Încarcă o imagine din Admin (Poveste)</span>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{# MISIUNE / VIZIUNE / VALORI (imagini separate) #}
+<section class="bg-light border-top border-bottom">
+  <div class="container py-5">
+    <div class="row g-4">
+
+      <div class="col-lg-4">
+        <div class="p-4 bg-white border rounded-4 h-100">
+          {% if about.mission_image %}
+            <img src="{{ about.mission_image.url }}" class="img-fluid rounded-3 mb-3" alt="Misiune">
+          {% else %}
+            <div class="ratio ratio-16x9 bg-light border rounded-3 mb-3 d-flex align-items-center justify-content-center">
+              <span class="text-muted small">Imagine Misiune (Admin)</span>
+            </div>
+          {% endif %}
+
+          <h3 class="h5 fw-semibold mb-2">{{ about.mission_title }}</h3>
+          <p class="text-muted mb-0" style="white-space: pre-line;">{{ about.mission_text }}</p>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="p-4 bg-white border rounded-4 h-100">
+          {% if about.vision_image %}
+            <img src="{{ about.vision_image.url }}" class="img-fluid rounded-3 mb-3" alt="Viziune">
+          {% else %}
+            <div class="ratio ratio-16x9 bg-light border rounded-3 mb-3 d-flex align-items-center justify-content-center">
+              <span class="text-muted small">Imagine Viziune (Admin)</span>
+            </div>
+          {% endif %}
+
+          <h3 class="h5 fw-semibold mb-2">{{ about.vision_title }}</h3>
+          <p class="text-muted mb-0" style="white-space: pre-line;">{{ about.vision_text }}</p>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="p-4 bg-white border rounded-4 h-100">
+          {% if about.values_image %}
+            <img src="{{ about.values_image.url }}" class="img-fluid rounded-3 mb-3" alt="Valori">
+          {% else %}
+            <div class="ratio ratio-16x9 bg-light border rounded-3 mb-3 d-flex align-items-center justify-content-center">
+              <span class="text-muted small">Imagine Valori (Admin)</span>
+            </div>
+          {% endif %}
+
+          <h3 class="h5 fw-semibold mb-2">{{ about.values_title }}</h3>
+          <ul class="mb-0">
+            {% for v in about.values_text.splitlines %}
+              {% if v %}<li>{{ v }}</li>{% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{# DIFERENȚIATORI + IMAGINE #}
+<section>
+  <div class="container py-5">
+    <div class="row g-4 align-items-center">
+
+      <div class="col-lg-6">
+        <h2 class="h3 fw-semibold mb-3">{{ about.differentiators_title }}</h2>
+        <ul class="mb-0">
+          {% for d in about.differentiators_text.splitlines %}
+            {% if d %}<li class="mb-2">{{ d }}</li>{% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="col-lg-6">
+        {% if about.differentiators_image %}
+          <img src="{{ about.differentiators_image.url }}" class="img-fluid rounded-4 shadow-sm" alt="Ce ne diferențiază">
+        {% else %}
+          <div class="ratio ratio-16x9 bg-light border rounded-4 d-flex align-items-center justify-content-center">
+            <span class="text-muted">Încarcă o imagine din Admin (Diferențiatori)</span>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{# CTA + IMAGINE #}
+<section class="bg-light border-top">
+  <div class="container py-5">
+    <div class="row g-4 align-items-center">
+
+      <div class="col-lg-6">
+        <div class="p-4 p-lg-5 bg-white border rounded-4 shadow-sm">
+          <h3 class="h4 fw-semibold mb-2">{{ about.cta_title }}</h3>
+          <p class="text-muted mb-4">{{ about.cta_text }}</p>
+          <a href="{{ about.cta_button_url }}" class="btn btn-primary">
+            {{ about.cta_button_text }}
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        {% if about.cta_image %}
+          <img src="{{ about.cta_image.url }}" class="img-fluid rounded-4 shadow-sm" alt="Contact Vertix">
+        {% else %}
+          <div class="ratio ratio-16x9 bg-white border rounded-4 d-flex align-items-center justify-content-center">
+            <span class="text-muted">Încarcă o imagine din Admin (CTA)</span>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}
