@@ -1,0 +1,191 @@
+{# portal/_comments_block.html #}
+
+<div class="mt-3">
+  <div class="card">
+    <div class="card-body">
+
+      <form method="post"
+            action="{% url 'chat_post' chat_kind chat_object_id %}"
+            enctype="multipart/form-data"
+            id="chatForm">
+        {% csrf_token %}
+
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <input type="hidden" name="reply_to" id="replyToInput" value="">
+
+        {% if chat_is_staff %}
+          <div class="mb-2">
+            <label class="form-label small mb-1">Vizibilitate</label>
+            <select class="form-select form-select-sm" name="visibility" style="max-width:260px;">
+              <option value="PUBLIC">Public (client + staff)</option>
+              <option value="INTERNAL">Intern (doar staff)</option>
+            </select>
+          </div>
+        {% else %}
+          <input type="hidden" name="visibility" value="PUBLIC">
+        {% endif %}
+
+        <!-- Reply banner -->
+        <div class="mb-2" id="replyBanner" style="display:none;">
+          <div class="alert alert-secondary py-2 px-3 d-flex justify-content-between align-items-center mb-2">
+            <div class="small">
+              Răspunzi la mesajul <span class="fw-semibold" id="replyBannerId"></span>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="cancelReplyBtn">Anulează</button>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <textarea class="form-control" name="body" rows="3" placeholder="Scrie un mesaj..."></textarea>
+        </div>
+
+        <!-- ✅ Dropzone + input real -->
+        <div class="mb-2">
+          <label class="form-label small mb-1">Atașamente</label>
+
+          <div id="chatDropzone"
+               class="border rounded p-3 bg-light"
+               style="cursor:pointer;">
+            <div class="fw-semibold">Trage fișiere aici (drag & drop)</div>
+            <div class="text-muted small">sau click pentru a selecta. Poți adăuga mai multe fișiere.</div>
+            <div id="chatFileList" class="small mt-2"></div>
+          </div>
+
+          <input id="chatFileInput" class="form-control d-none" type="file" name="attachments" multiple>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Trimite</button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Mesaje -->
+  <div class="mt-3">
+    <h6 class="mb-2">Discuții</h6>
+
+    {% if chat_messages %}
+      <div class="list-group">
+        {% for m in chat_messages %}
+          <div class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div style="min-width:0;">
+                <div class="fw-semibold">
+                  {{ m.author }}
+                  <span class="text-muted small">• {{ m.created_at|date:"Y-m-d H:i" }}</span>
+                  {% if chat_is_staff and m.visibility == "INTERNAL" %}
+                    <span class="badge text-bg-dark ms-2">INTERN</span>
+                  {% endif %}
+                </div>
+
+                {% if m.reply_to %}
+                  <div class="small text-muted mb-1">
+                    Reply la: #{{ m.reply_to.id }} — {{ m.reply_to.body|truncatechars:80 }}
+                  </div>
+                {% endif %}
+
+                <div class="mt-1">{{ m.body|linebreaksbr }}</div>
+
+                {% if m.attachments.all %}
+                  <div class="mt-2 d-flex flex-wrap gap-2">
+                    {% for a in m.attachments.all %}
+                      <a class="btn btn-outline-secondary btn-sm"
+                         href="{{ a.file.url }}"
+                         target="_blank">
+                        📎 {{ a.original_name|default:"fișier" }}
+                      </a>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <button type="button"
+                      class="btn btn-outline-primary btn-sm flex-shrink-0"
+                      data-reply-id="{{ m.id }}">
+                Reply
+              </button>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-muted">Nu există mesaje.</div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+(function(){
+  // =========================
+  // Reply logic
+  // =========================
+  const replyToInput = document.getElementById("replyToInput");
+  const replyBanner = document.getElementById("replyBanner");
+  const replyBannerId = document.getElementById("replyBannerId");
+  const cancelReplyBtn = document.getElementById("cancelReplyBtn");
+
+  function setReply(id){
+    replyToInput.value = id;
+    replyBanner.style.display = "block";
+    replyBannerId.textContent = "#" + id;
+    document.getElementById("chatForm").scrollIntoView({behavior:"smooth", block:"center"});
+  }
+
+  function clearReply(){
+    replyToInput.value = "";
+    replyBanner.style.display = "none";
+    replyBannerId.textContent = "";
+  }
+
+  document.querySelectorAll("[data-reply-id]").forEach(btn => {
+    btn.addEventListener("click", () => setReply(btn.getAttribute("data-reply-id")));
+  });
+
+  if(cancelReplyBtn){
+    cancelReplyBtn.addEventListener("click", clearReply);
+  }
+
+  // =========================
+  // Drag & Drop attachments
+  // =========================
+  const dz = document.getElementById("chatDropzone");
+  const input = document.getElementById("chatFileInput");
+  const list = document.getElementById("chatFileList");
+
+  if(!dz || !input || !list) return;
+
+  function renderFiles(files){
+    if(!files || !files.length){
+      list.innerHTML = "";
+      return;
+    }
+    const lines = Array.from(files).map(f => `• ${f.name} (${Math.ceil(f.size/1024)} KB)`);
+    list.innerHTML = lines.join("<br>");
+  }
+
+  // click -> open picker
+  dz.addEventListener("click", () => input.click());
+  input.addEventListener("change", () => renderFiles(input.files));
+
+  // drag styles
+  dz.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dz.classList.add("border-primary");
+  });
+
+  dz.addEventListener("dragleave", () => dz.classList.remove("border-primary"));
+
+  // drop -> merge files
+  dz.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dz.classList.remove("border-primary");
+
+    const dt = new DataTransfer();
+    Array.from(input.files || []).forEach(f => dt.items.add(f));
+    Array.from(e.dataTransfer.files || []).forEach(f => dt.items.add(f));
+
+    input.files = dt.files;
+    renderFiles(input.files);
+  });
+})();
+</script>

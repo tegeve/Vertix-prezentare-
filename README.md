@@ -67,6 +67,10 @@ Aplicația deservește:
 ### 🛠️ Admin Dashboard (Django Admin custom)
 ![Admin](docs/images/Setari%20Admin.png)
 
+
+### 💬 Mesaje & notificări (Pop-up site)
+
+![Mesaj pop-up informativ](docs/images/mesaj-popup.png)
 ---
 
 ## 🧱 Arhitectură aplicație
@@ -136,6 +140,7 @@ Vertix/
 - Cariere
 - GDPR / Cookies
 
+
 ---
 
 ### Servicii industriale
@@ -161,11 +166,35 @@ Vertix/
 ### Admin Dashboard
 - Gestionare conținut site
 - Blog & industrii
-- Mesaje pop-up
+- Mesaje pop-up & notificări
 - Utilizatori & grupuri
 - Analytics (page views)
 
 ---
+---
+
+### 💬 Mesaje & notificări (Pop-up site)
+
+Platforma include un sistem de **mesaje pop-up configurabile din Admin**, utilizat pentru informarea rapidă a utilizatorilor.
+
+#### Tipuri de mesaje suportate:
+- Mesaje informative (ex: program special, mentenanță)
+- Alerte importante (ex: indisponibilitate servicii)
+- Mesaje temporare (campanii, anunțuri)
+
+#### Funcționalități:
+- activare / dezactivare mesaj
+- perioadă de afișare (start / end)
+- afișare pe pagini publice
+- control din Django Admin
+- suport pentru mai multe mesaje active
+
+#### Exemple de utilizare:
+- „Program de sărbători – activitate suspendată”
+- „Mentenanță programată”
+- „Activitate limitată – suport de urgență”
+
+Mesajele sunt afișate automat utilizatorilor și pot fi administrate fără modificări de cod.
 
 ## 🌍 Multilingv
 

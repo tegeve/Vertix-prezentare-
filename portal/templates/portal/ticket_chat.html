@@ -1,0 +1,174 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 980px;">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h4 mb-1">Chat ticket #{{ ticket.id }}</h1>
+      <div class="text-muted small">{{ ticket.title }}</div>
+    </div>
+
+    <a class="btn btn-outline-secondary" href="{% url 'portal_home' %}">Înapoi</a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body" style="max-height: 60vh; overflow:auto;" id="chatScroll">
+      {% for m in messages %}
+        <div class="mb-3" id="msg-{{ m.id }}">
+          <div class="d-flex align-items-center gap-2">
+            <strong>{{ m.author }}</strong>
+            <span class="text-muted small">{{ m.created_at|date:"d.m.Y H:i" }}</span>
+
+            {% if m.visibility == "INTERNAL" %}
+              <span class="badge text-bg-warning">Intern</span>
+            {% endif %}
+          </div>
+
+          {% if m.reply_to %}
+            <div class="small text-muted border-start ps-2 mt-1">
+              Reply la <a href="#msg-{{ m.reply_to.id }}">#{{ m.reply_to.id }}</a>:
+              {{ m.reply_to.body|truncatechars:120 }}
+            </div>
+          {% endif %}
+
+          {% if not m.is_deleted %}
+            <div class="mt-1" style="white-space: pre-wrap;">{{ m.body }}</div>
+          {% else %}
+            <div class="mt-1 text-muted fst-italic">Mesaj șters</div>
+          {% endif %}
+
+          {% if m.attachments.all %}
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              {% for a in m.attachments.all %}
+                {% if a.content_type|slice:":5" == "image" %}
+                  <a href="{{ a.file.url }}" target="_blank">
+                    <img src="{{ a.file.url }}" alt="{{ a.original_name }}" style="height:80px;border-radius:10px;" />
+                  </a>
+                {% else %}
+                  <a class="btn btn-sm btn-outline-secondary" href="{{ a.file.url }}" target="_blank">
+                    {{ a.original_name|default:"Fișier" }}
+                  </a>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="mt-2">
+            <button class="btn btn-sm btn-outline-secondary"
+                    type="button"
+                    onclick="setReply({{ m.id }}, '{{ m.author|escapejs }}')">
+              Reply
+            </button>
+          </div>
+        </div>
+        <hr/>
+      {% empty %}
+        <div class="text-muted">Nu există mesaje încă.</div>
+      {% endfor %}
+    </div>
+
+    <div class="card-footer">
+      <form method="post" action="{% url 'ticket_chat_post' ticket.id %}" enctype="multipart/form-data" id="chatForm">
+        {% csrf_token %}
+
+        <input type="hidden" name="reply_to" id="replyToInput" value="">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="small text-muted" id="replyHint" style="display:none;"></div>
+
+          {% if is_staff %}
+            <div class="d-flex gap-2 align-items-center">
+              <label class="small text-muted">Vizibilitate:</label>
+              <select class="form-select form-select-sm" name="visibility" style="width:auto;">
+                <option value="PUBLIC">Public</option>
+                <option value="INTERNAL">Intern</option>
+              </select>
+            </div>
+          {% else %}
+            <input type="hidden" name="visibility" value="PUBLIC">
+          {% endif %}
+        </div>
+
+        <textarea class="form-control mb-2" name="body" rows="3"
+                  placeholder="Scrie mesajul... (folosește @username pentru tag)"></textarea>
+
+        <div class="border rounded-3 p-3 mb-2" id="dropzone">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+              Trage aici imagini/fișiere sau apasă “Alege fișiere”.
+            </div>
+            <label class="btn btn-sm btn-outline-primary mb-0">
+              Alege fișiere
+              <input type="file" name="attachments" id="fileInput" multiple hidden>
+            </label>
+          </div>
+          <div class="d-flex flex-wrap gap-2 mt-2" id="preview"></div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" type="submit">Trimite</button>
+          <button class="btn btn-outline-secondary" type="button" onclick="clearReply()">Anulează reply</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // scroll la final
+  const chatScroll = document.getElementById("chatScroll");
+  chatScroll.scrollTop = chatScroll.scrollHeight;
+
+  // reply
+  const replyToInput = document.getElementById("replyToInput");
+  const replyHint = document.getElementById("replyHint");
+  function setReply(id, author) {
+    replyToInput.value = id;
+    replyHint.style.display = "block";
+    replyHint.innerText = `Reply la #${id} (${author})`;
+  }
+  function clearReply() {
+    replyToInput.value = "";
+    replyHint.style.display = "none";
+    replyHint.innerText = "";
+  }
+
+  // drag & drop files
+  const dropzone = document.getElementById("dropzone");
+  const fileInput = document.getElementById("fileInput");
+  const preview = document.getElementById("preview");
+
+  function renderPreview(files) {
+    preview.innerHTML = "";
+    [...files].forEach(f => {
+      const chip = document.createElement("div");
+      chip.className = "badge text-bg-light border";
+      chip.style.padding = "10px";
+      chip.style.borderRadius = "10px";
+      chip.innerText = `${f.name} (${Math.round(f.size/1024)} KB)`;
+      preview.appendChild(chip);
+    });
+  }
+
+  dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.classList.add("border-primary");
+  });
+
+  dropzone.addEventListener("dragleave", () => {
+    dropzone.classList.remove("border-primary");
+  });
+
+  dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("border-primary");
+    if (e.dataTransfer.files && e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      renderPreview(fileInput.files);
+    }
+  });
+
+  fileInput.addEventListener("change", () => renderPreview(fileInput.files));
+</script>
+{% endblock %}

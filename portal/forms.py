@@ -7,6 +7,8 @@ from django_recaptcha.widgets import ReCaptchaV3
 
 import time
 
+from .models_chat import TicketMessage
+
 
 class TicketCreateForm(forms.ModelForm):
     # anti-bot
@@ -47,3 +49,17 @@ class SitePagesSettingsForm(forms.ModelForm):
             "industries_enabled","contact_enabled","blog_enabled","careers_enabled",
             "gdpr_enabled","cookies_enabled",
         ]
+
+
+class TicketMessageForm(forms.ModelForm):
+    class Meta:
+        model = TicketMessage
+        fields = ["body", "reply_to", "visibility"]
+
+    def clean_visibility(self):
+        v = self.cleaned_data["visibility"]
+        # clientul nu are voie la INTERNAL
+        user = getattr(self, "user", None)
+        if user and getattr(user, "role", None) == "CLIENT" and v == "INTERNAL":
+            return TicketMessage.Visibility.PUBLIC
+        return v

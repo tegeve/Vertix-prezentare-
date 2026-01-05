@@ -91,9 +91,12 @@
               <li><hr class="dropdown-divider"></li>
 
               <li>
-                <a class="dropdown-item" href="{% url 'portal_dashboard' %}">
-                  {% trans "Dashboard" %}
+                <a class="nav-link position-relative" href="{% url 'portal_dashboard' %}">
+                  Portal
+                  <span id="unreadBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger"
+                        style="display:none;">0</span>
                 </a>
+
               </li>
 
               <li>
@@ -119,6 +122,25 @@
             </a>
           </li>
         {% endif %}
+
+<script>
+async function refreshUnread() {
+  try {
+    const r = await fetch("{% url 'chat_unread_count' %}");
+    const data = await r.json();
+    const badge = document.getElementById("unreadBadge");
+    const n = data.unread_total || 0;
+    if (n > 0) {
+      badge.style.display = "inline-block";
+      badge.innerText = n;
+    } else {
+      badge.style.display = "none";
+    }
+  } catch(e) {}
+}
+refreshUnread();
+setInterval(refreshUnread, 15000); // la 15 sec (simplu)
+</script>
 
 
       </ul>

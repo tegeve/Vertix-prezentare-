@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -20,6 +21,7 @@ from openpyxl.utils import get_column_letter
 from accounts.models import User
 from website.site_settings import get_site_settings
 
+from .chat_permissions import is_staff_user
 from .forms import TicketCreateForm
 from .forms_site_settings import SitePagesSettingsForm
 from .forms_status import RequestStatusForm
@@ -30,9 +32,10 @@ from .models import (
     RequestStatus,
     Technician,
     Ticket,
-    AbuseEvent,   # adaugi în models.py
-    BlockedIP,    # adaugi în models.py
+    AbuseEvent,
+    BlockedIP,
 )
+from .models_chat import TicketMessage
 from .permissions import role_required
 
 
@@ -202,6 +205,24 @@ def _public_source(r: PublicRequest) -> str:
     return "INTERN"
 
 
+def _chat_messages_for_target(request, target_model, target_pk: int):
+    """
+    Returnează mesajele pentru un target generic (Ticket/PublicRequest).
+    Filtrează INTERNAL pentru non-staff.
+    """
+    ct = ContentType.objects.get_for_model(target_model)
+    qs = (
+        TicketMessage.objects
+        .filter(content_type=ct, object_id=target_pk)
+        .select_related("author", "reply_to", "content_type")
+        .prefetch_related("attachments")
+        .order_by("created_at")
+    )
+    if not is_staff_user(request.user):
+        qs = qs.filter(visibility=TicketMessage.Visibility.PUBLIC)
+    return qs
+
+
 # ============================================================
 # Tickets CRUD (ADMIN/MANAGER)
 # ============================================================
@@ -225,10 +246,18 @@ def ticket_edit(request, pk):
         messages.success(request, "Cererea a fost actualizată.")
         return redirect("portal_dashboard")
 
+    chat_qs = _chat_messages_for_target(request, Ticket, t.pk)
+
     return render(request, "portal/ticket_edit.html", {
         "ticket": t,
         "statuses": Ticket.Status.choices,
         "tech_users": User.objects.filter(role=User.Role.TEHNICIAN, is_active=True),
+
+        # ✅ chat (pentru include-ul _comments_block.html)
+        "chat_kind": "ticket",
+        "chat_object_id": t.pk,
+        "chat_messages": chat_qs,
+        "chat_is_staff": is_staff_user(request.user),
     })
 
 
@@ -289,10 +318,18 @@ def public_request_edit(request, pk):
 
         return redirect("public_request_edit", pk=r.pk)
 
+    chat_qs = _chat_messages_for_target(request, PublicRequest, r.pk)
+
     return render(request, "portal/public_request_edit.html", {
         "req": r,
         "statuses": RequestStatus.objects.filter(is_active=True).order_by("order", "name"),
         "technicians": Technician.objects.filter(is_active=True).order_by("name"),
+
+        # ✅ chat (pentru include-ul _comments_block.html)
+        "chat_kind": "public",
+        "chat_object_id": r.pk,
+        "chat_messages": chat_qs,
+        "chat_is_staff": is_staff_user(request.user),
     })
 
 
