@@ -19,7 +19,7 @@ class VertixAdminSite(AdminSite):
 
         last_30 = timezone.now() - timedelta(days=30)
 
-        ctx["dashboard"] = {
+        dashboard = {
             "contact_unread": ContactMessage.objects.filter(is_read=False).count(),
             "contacts_30d": ContactMessage.objects.filter(created_at__gte=last_30).count(),
 
@@ -35,6 +35,27 @@ class VertixAdminSite(AdminSite):
             "recent_contacts": ContactMessage.objects.order_by("-created_at")[:6],
             "recent_posts": BlogPost.objects.order_by("-published_at")[:6],
         }
+
+        # ✅ DOCUMENTS (optional, doar daca app-ul exista)
+        try:
+            Document = apps.get_model("documents", "Document")
+            DocumentType = apps.get_model("documents", "DocumentType")
+
+            dashboard.update({
+                "doc_types_total": DocumentType.objects.count(),
+                "docs_total": Document.objects.count(),
+                "docs_draft": Document.objects.filter(status="DRAFT").count(),
+                "docs_in_progress": Document.objects.filter(status="IN_PROGRESS").count(),
+                "docs_ready": Document.objects.filter(status="READY").count(),
+                "docs_final": Document.objects.filter(status="FINAL").count(),
+                "docs_30d": Document.objects.filter(created_at__gte=last_30).count(),
+                "recent_docs": Document.objects.select_related("doc_type", "client_user", "owner").order_by("-created_at")[:8],
+            })
+        except LookupError:
+            # app "documents" nu e instalat inca
+            pass
+
+        ctx["dashboard"] = dashboard
         return ctx
 
 vertix_admin_site = VertixAdminSite(name="vertix_admin")

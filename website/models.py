@@ -4,7 +4,8 @@ from django.urls import reverse
 class Industry(models.Model):
     name = models.CharField(max_length=120)
     slug = models.SlugField(unique=True)
-
+    short = models.CharField(max_length=260, blank=True)
+    
     class Meta:
         ordering = ["name"]
 

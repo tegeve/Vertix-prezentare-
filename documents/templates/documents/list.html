@@ -1,0 +1,196 @@
+{% extends "website/base.html" %}
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Documente</h1>
+
+    <div class="d-flex gap-2">
+      {% if request.user.role == "ADMIN" or request.user.role == "MANAGER" %}
+        <a class="btn btn-primary" href="{% url 'documents:create' %}">Adaugă</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card p-3 shadow-sm">
+
+    <form method="get" class="mb-2">
+      <input type="hidden" name="page" value="1">
+
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-lg-4">
+          <label class="form-label small mb-1">Caută (global)</label>
+          <input class="form-control form-control-sm" name="q"
+                 value="{{ q|default_if_none:'' }}"
+                 placeholder="nr / tip / client / owner">
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <label class="form-label small mb-1">Tip document</label>
+          <select class="form-select form-select-sm" name="type">
+            <option value="" {% if not f_type %}selected{% endif %}>Toate</option>
+            {% for dt in doc_types %}
+              <option value="{{ dt.code }}" {% if f_type == dt.code %}selected{% endif %}>{{ dt.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <label class="form-label small mb-1">Status</label>
+          <select class="form-select form-select-sm" name="status">
+            <option value="" {% if not f_status %}selected{% endif %}>Toate</option>
+            <option value="DRAFT" {% if f_status == "DRAFT" %}selected{% endif %}>Draft</option>
+            <option value="IN_PROGRESS" {% if f_status == "IN_PROGRESS" %}selected{% endif %}>În lucru</option>
+            <option value="READY" {% if f_status == "READY" %}selected{% endif %}>Pregătit</option>
+            <option value="FINAL" {% if f_status == "FINAL" %}selected{% endif %}>Final</option>
+            <option value="CANCELLED" {% if f_status == "CANCELLED" %}selected{% endif %}>Anulat</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <label class="form-label small mb-1">Linii/pagină</label>
+          <select class="form-select form-select-sm" name="per_page">
+            {% for n in per_page_choices %}
+              <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+        <div class="text-muted small">
+          Rezultate: <span class="fw-semibold">{{ page_obj.paginator.count }}</span>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <button class="btn btn-outline-primary btn-sm" type="submit">Aplică</button>
+          <a class="btn btn-outline-secondary btn-sm" href="?per_page={{ per_page }}">Reset</a>
+        </div>
+      </div>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th>
+              <a class="text-decoration-none"
+                 href="?{{ keep_qs }}&page=1&sort=number&dir={% if sort == 'number' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Nr
+              </a>
+            </th>
+            <th>
+              <a class="text-decoration-none"
+                 href="?{{ keep_qs }}&page=1&sort=type&dir={% if sort == 'type' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Tip
+              </a>
+            </th>
+            <th>
+              <a class="text-decoration-none"
+                 href="?{{ keep_qs }}&page=1&sort=status&dir={% if sort == 'status' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Status
+              </a>
+            </th>
+            <th>
+              <a class="text-decoration-none"
+                 href="?{{ keep_qs }}&page=1&sort=client&dir={% if sort == 'client' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Client
+              </a>
+            </th>
+            <th>
+              <a class="text-decoration-none"
+                 href="?{{ keep_qs }}&page=1&sort=owner&dir={% if sort == 'owner' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Owner
+              </a>
+            </th>
+            <th class="text-end">Acțiuni</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for d in page_obj.object_list %}
+            <tr>
+              <td class="fw-semibold">{{ d.number }}</td>
+              <td>{{ d.doc_type.name }}</td>
+
+              <td>
+                {% if d.status == "FINAL" %}
+                  <span class="badge bg-success">FINAL</span>
+                {% elif d.status == "READY" %}
+                  <span class="badge bg-warning text-dark">READY</span>
+                {% elif d.status == "IN_PROGRESS" %}
+                  <span class="badge bg-info text-dark">IN PROGRESS</span>
+                {% else %}
+                  <span class="badge bg-secondary">{{ d.status }}</span>
+                {% endif %}
+              </td>
+
+              <td>{{ d.client_user.company_name|default:d.client_user.email|default:"—" }}</td>
+              <td>{{ d.owner.email|default:"—" }}</td>
+
+              <td class="text-end">
+                <a class="btn btn-outline-secondary btn-sm" href="{% url 'documents:detail' d.pk %}">Vezi</a>
+
+                {% if request.user.role == "ADMIN" or request.user.role == "MANAGER" or request.user in d.technicians.all %}
+                  {% if d.status != "FINAL" and d.status != "CANCELLED" %}
+                    <a class="btn btn-outline-primary btn-sm" href="{% url 'documents:edit' d.pk %}">Edit</a>
+                  {% endif %}
+                {% endif %}
+
+                {% if request.user.role == "ADMIN" or request.user.role == "MANAGER" %}
+                  {% if d.status != "FINAL" and d.status != "CANCELLED" %}
+                    <form method="post" action="{% url 'documents:close' d.pk %}" class="d-inline">
+                      {% csrf_token %}
+                      <button class="btn btn-outline-success btn-sm" type="submit"
+                              onclick="return confirm('Închizi documentul ca FINAL?');">
+                        Închide
+                      </button>
+                    </form>
+                  {% endif %}
+
+                  <form method="post" action="{% url 'documents:delete' d.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger btn-sm" type="submit"
+                            onclick="return confirm('Sigur ștergi documentul?');">
+                      Șterge
+                    </button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="text-muted">Nu există documente.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+      <nav class="mt-3">
+        <ul class="pagination pagination-sm mb-0">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?{{ keep_qs }}&page={{ page_obj.previous_page_number }}">«</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">«</span></li>
+          {% endif %}
+
+          <li class="page-item disabled">
+            <span class="page-link">Pagina {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+          </li>
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?{{ keep_qs }}&page={{ page_obj.next_page_number }}">»</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">»</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

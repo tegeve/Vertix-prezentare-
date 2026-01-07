@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ doc.number }} – Preview</title>
+  <style>
+    @page { size: A4; margin: 16mm 14mm; }
+
+    body {
+      font-family: DejaVu Sans, Arial, sans-serif;
+      font-size: 10.8pt;
+      color: #000;
+    }
+
+    .page {
+      min-height: 277mm; /* A4 minus margini */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+
+    h1 { font-size: 16pt; margin: 0 0 8px; }
+    h2 { font-size: 12pt; margin: 12px 0 6px; }
+
+    .box {
+      border: 1px solid #d9d9d9;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #d9d9d9; padding: 6px; vertical-align: top; }
+    th { background: #f3f3f3; }
+
+    .signatures {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .sign-box {
+      flex: 1;
+      border: 1px solid #d9d9d9;
+      border-radius: 8px;
+      padding: 10px;
+      height: 90px;
+    }
+
+    .footer {
+      font-size: 9pt;
+      color: #666;
+      text-align: center;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ========================= -->
+<!-- PAGINA 1 – ORDIN LUCRU -->
+<!-- ========================= -->
+<div class="page">
+
+  <div>
+    <h1>Ordin de lucru</h1>
+
+    <div class="box">
+      <b>Nr document:</b> {{ doc.number }}<br>
+      <b>Client:</b> {{ client.company_name|default:client.email }}<br>
+      <b>Locație:</b> {{ data.location|default:"—" }}<br>
+      <b>Tip intervenție:</b> {{ data.work_type|default:"—" }}
+    </div>
+
+    <h2>Solicitare client</h2>
+    <div class="box">{{ data.client_request|default:"—" }}</div>
+
+    <h2>Scope of work</h2>
+    <div class="box">{{ data.scope_of_work|default:"—" }}</div>
+
+    <h2>Materiale / Piese</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Denumire</th><th>Cant.</th><th>UM</th><th>Obs.</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in data.materials %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ m.name }}</td>
+            <td>{{ m.qty }}</td>
+            <td>{{ m.unit }}</td>
+            <td>{{ m.notes }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">—</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div>
+    <div class="signatures">
+      <div class="sign-box">
+        <b>Prestator</b><br><br>
+        {{ owner.email|default:"—" }}
+      </div>
+      <div class="sign-box">
+        <b>Client</b><br><br>
+        {{ data.contact_name|default:"—" }}
+      </div>
+    </div>
+
+    <div class="footer">
+      Document generat electronic · Pagina 1 / 2
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================= -->
+<!-- PAGINA 2 – TERMENI (din Admin, editabil) -->
+<!-- ========================= -->
+<div class="page">
+
+  <div>
+    <h1>{{ terms_title|default:"Termeni și condiții" }}</h1>
+
+    <div class="box">
+      {{ terms_html|safe }}
+    </div>
+  </div>
+
+  <div class="footer">
+    Am luat la cunoștință și accept termenii · Pagina 2 / 2
+  </div>
+
+</div>
+
+</body>
+</html>

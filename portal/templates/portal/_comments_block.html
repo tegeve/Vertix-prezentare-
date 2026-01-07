@@ -30,13 +30,24 @@
           <div class="alert alert-secondary py-2 px-3 d-flex justify-content-between align-items-center mb-2">
             <div class="small">
               Răspunzi la mesajul <span class="fw-semibold" id="replyBannerId"></span>
+              <span class="text-muted" id="replyBannerPreview"></span>
             </div>
             <button type="button" class="btn btn-sm btn-outline-secondary" id="cancelReplyBtn">Anulează</button>
           </div>
         </div>
 
-        <div class="mb-2">
-          <textarea class="form-control" name="body" rows="3" placeholder="Scrie un mesaj..."></textarea>
+        <!-- Body + mentions autocomplete -->
+        <div class="mb-2 position-relative">
+          <textarea id="chatBody"
+                    class="form-control"
+                    name="body"
+                    rows="3"
+                    placeholder="Scrie un mesaj... Folosește @ pentru a menționa un utilizator."></textarea>
+
+          <div id="mentionBox"
+               class="list-group position-absolute shadow-sm"
+               style="z-index:1000; display:none; max-height:220px; overflow:auto; left:0; right:0; top:100%; margin-top:.25rem;">
+          </div>
         </div>
 
         <!-- ✅ Dropzone + input real -->
@@ -67,8 +78,9 @@
     {% if chat_messages %}
       <div class="list-group">
         {% for m in chat_messages %}
-          <div class="list-group-item">
+          <div class="list-group-item" id="msg-{{ m.id }}">
             <div class="d-flex justify-content-between align-items-start gap-2">
+
               <div style="min-width:0;">
                 <div class="fw-semibold">
                   {{ m.author }}
@@ -80,7 +92,9 @@
 
                 {% if m.reply_to %}
                   <div class="small text-muted mb-1">
-                    Reply la: #{{ m.reply_to.id }} — {{ m.reply_to.body|truncatechars:80 }}
+                    Reply la:
+                    <a href="#msg-{{ m.reply_to.id }}" class="text-decoration-none">#{{ m.reply_to.id }}</a>
+                    — {{ m.reply_to.body|truncatechars:80 }}
                   </div>
                 {% endif %}
 
@@ -91,7 +105,7 @@
                     {% for a in m.attachments.all %}
                       <a class="btn btn-outline-secondary btn-sm"
                          href="{{ a.file.url }}"
-                         target="_blank">
+                         target="_blank" rel="noopener">
                         📎 {{ a.original_name|default:"fișier" }}
                       </a>
                     {% endfor %}
@@ -101,7 +115,8 @@
 
               <button type="button"
                       class="btn btn-outline-primary btn-sm flex-shrink-0"
-                      data-reply-id="{{ m.id }}">
+                      data-reply-id="{{ m.id }}"
+                      data-reply-preview="{{ m.body|truncatechars:90|escape }}">
                 Reply
               </button>
             </div>
@@ -119,26 +134,35 @@
   // =========================
   // Reply logic
   // =========================
+  const form = document.getElementById("chatForm");
+  const textarea = document.getElementById("chatBody");
+
   const replyToInput = document.getElementById("replyToInput");
   const replyBanner = document.getElementById("replyBanner");
   const replyBannerId = document.getElementById("replyBannerId");
+  const replyBannerPreview = document.getElementById("replyBannerPreview");
   const cancelReplyBtn = document.getElementById("cancelReplyBtn");
 
-  function setReply(id){
-    replyToInput.value = id;
-    replyBanner.style.display = "block";
-    replyBannerId.textContent = "#" + id;
-    document.getElementById("chatForm").scrollIntoView({behavior:"smooth", block:"center"});
+  function setReply(id, preview){
+    if(replyToInput) replyToInput.value = id;
+    if(replyBanner) replyBanner.style.display = "block";
+    if(replyBannerId) replyBannerId.textContent = "#" + id;
+    if(replyBannerPreview) replyBannerPreview.textContent = preview ? (" — " + preview) : "";
+    if(form) form.scrollIntoView({behavior:"smooth", block:"center"});
+    if(textarea) textarea.focus();
   }
 
   function clearReply(){
-    replyToInput.value = "";
-    replyBanner.style.display = "none";
-    replyBannerId.textContent = "";
+    if(replyToInput) replyToInput.value = "";
+    if(replyBanner) replyBanner.style.display = "none";
+    if(replyBannerId) replyBannerId.textContent = "";
+    if(replyBannerPreview) replyBannerPreview.textContent = "";
   }
 
   document.querySelectorAll("[data-reply-id]").forEach(btn => {
-    btn.addEventListener("click", () => setReply(btn.getAttribute("data-reply-id")));
+    btn.addEventListener("click", () => {
+      setReply(btn.getAttribute("data-reply-id"), btn.getAttribute("data-reply-preview") || "");
+    });
   });
 
   if(cancelReplyBtn){
@@ -152,9 +176,8 @@
   const input = document.getElementById("chatFileInput");
   const list = document.getElementById("chatFileList");
 
-  if(!dz || !input || !list) return;
-
   function renderFiles(files){
+    if(!list) return;
     if(!files || !files.length){
       list.innerHTML = "";
       return;
@@ -163,29 +186,179 @@
     list.innerHTML = lines.join("<br>");
   }
 
-  // click -> open picker
-  dz.addEventListener("click", () => input.click());
-  input.addEventListener("change", () => renderFiles(input.files));
+  if(dz && input && list){
+    dz.addEventListener("click", () => input.click());
+    input.addEventListener("change", () => renderFiles(input.files));
 
-  // drag styles
-  dz.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dz.classList.add("border-primary");
+    dz.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dz.classList.add("border-primary");
+    });
+
+    dz.addEventListener("dragleave", () => dz.classList.remove("border-primary"));
+
+    dz.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dz.classList.remove("border-primary");
+
+      const dt = new DataTransfer();
+      Array.from(input.files || []).forEach(f => dt.items.add(f));
+      Array.from(e.dataTransfer.files || []).forEach(f => dt.items.add(f));
+
+      input.files = dt.files;
+      renderFiles(input.files);
+    });
+  }
+
+  // =========================
+  // Mentions autocomplete (@)  ✅ email-based (no username in your User)
+  // Endpoint: /ro/portal/chat/autocomplete/users/?q=...
+  // Returns: {"results":[{"id":..,"email":"..","label":".."}]}
+  // =========================
+  const mentionBox = document.getElementById("mentionBox");
+  if(!textarea || !mentionBox) return;
+
+  let lastQuery = "";
+  let activeIndex = -1;
+
+  function hideMentions(){
+    mentionBox.style.display = "none";
+    mentionBox.innerHTML = "";
+    activeIndex = -1;
+  }
+
+  function getMentionQuery(text, pos){
+    const left = text.slice(0, pos);
+    // token după @ până la spațiu (fără @ suplimentar)
+    const match = left.match(/@([^\s@]{1,80})$/);
+    return match ? match[1] : null;
+  }
+
+  function setActive(items, idx){
+    items.forEach(el => el.classList.remove("active"));
+    if(idx >= 0 && idx < items.length){
+      items[idx].classList.add("active");
+      activeIndex = idx;
+    } else {
+      activeIndex = -1;
+    }
+  }
+
+  function insertEmail(email){
+    const cursorPos = textarea.selectionStart;
+    const before = textarea.value.slice(0, cursorPos).replace(/@([^\s@]*)$/, `@${email} `);
+    const after = textarea.value.slice(cursorPos);
+    textarea.value = before + after;
+
+    const newPos = before.length;
+    textarea.setSelectionRange(newPos, newPos);
+    textarea.focus();
+    hideMentions();
+  }
+
+  async function fetchMentions(q){
+    const url = `/ro/portal/chat/autocomplete/users/?q=${encodeURIComponent(q)}`;
+    const r = await fetch(url, {headers: {"X-Requested-With": "XMLHttpRequest"}});
+    if(!r.ok) return {results: []};
+    return await r.json();
+  }
+
+  function renderMentions(results){
+    mentionBox.innerHTML = "";
+
+    if(!results || !results.length){
+      hideMentions();
+      return;
+    }
+
+    results.forEach((u) => {
+      const email = u.email || "";
+      if(!email) return;
+
+      const a = document.createElement("a");
+      a.href = "#";
+      a.className = "list-group-item list-group-item-action py-2";
+      a.textContent = u.label || email;
+      a.dataset.email = email;
+
+      a.addEventListener("mousedown", (ev) => {
+        ev.preventDefault();
+        insertEmail(email);
+      });
+
+      mentionBox.appendChild(a);
+    });
+
+    const items = Array.from(mentionBox.querySelectorAll(".list-group-item"));
+    if(!items.length){
+      hideMentions();
+      return;
+    }
+
+    mentionBox.style.display = "block";
+    setActive(items, 0);
+  }
+
+  textarea.addEventListener("input", async () => {
+    const cursorPos = textarea.selectionStart;
+    const q = getMentionQuery(textarea.value, cursorPos);
+
+    if(q === null || q.length < 1){
+      lastQuery = "";
+      hideMentions();
+      return;
+    }
+
+    if(q === lastQuery) return;
+    lastQuery = q;
+
+    try{
+      const data = await fetchMentions(q);
+      renderMentions(data.results || []);
+    } catch(e){
+      hideMentions();
+    }
   });
 
-  dz.addEventListener("dragleave", () => dz.classList.remove("border-primary"));
+  textarea.addEventListener("keydown", (e) => {
+    if(mentionBox.style.display === "none") return;
 
-  // drop -> merge files
-  dz.addEventListener("drop", (e) => {
-    e.preventDefault();
-    dz.classList.remove("border-primary");
+    const items = Array.from(mentionBox.querySelectorAll(".list-group-item"));
+    if(!items.length) return;
 
-    const dt = new DataTransfer();
-    Array.from(input.files || []).forEach(f => dt.items.add(f));
-    Array.from(e.dataTransfer.files || []).forEach(f => dt.items.add(f));
+    if(e.key === "ArrowDown"){
+      e.preventDefault();
+      setActive(items, (activeIndex + 1) % items.length);
+      return;
+    }
 
-    input.files = dt.files;
-    renderFiles(input.files);
+    if(e.key === "ArrowUp"){
+      e.preventDefault();
+      setActive(items, (activeIndex - 1 + items.length) % items.length);
+      return;
+    }
+
+    if(e.key === "Enter"){
+      // Enter selectează mențiunea, NU trimite form
+      e.preventDefault();
+      const chosen = items[activeIndex] || items[0];
+      const email = chosen?.dataset?.email;
+      if(email) insertEmail(email);
+      return;
+    }
+
+    if(e.key === "Escape"){
+      e.preventDefault();
+      hideMentions();
+      return;
+    }
   });
+
+  document.addEventListener("click", (e) => {
+    if(e.target === textarea) return;
+    if(mentionBox.contains(e.target)) return;
+    hideMentions();
+  });
+
 })();
 </script>

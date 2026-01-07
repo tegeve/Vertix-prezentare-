@@ -69,4 +69,6 @@ urlpatterns = [
     # ============================================================
     path("chat/unread-count/", views_chat.chat_unread_count, name="chat_unread_count"),
     path("chat/<str:kind>/<int:object_id>/post/", views_chat.chat_post, name="chat_post"),
+    path("chat/autocomplete/users/", views_chat.chat_user_autocomplete, name="chat_user_autocomplete"),
+
 ]

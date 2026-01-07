@@ -1,0 +1,32 @@
+{% extends "website/base.html" %}
+{% block content %}
+<div class="container py-4" style="max-width: 900px;">
+  <h1 class="h4 mb-3">Editează {{ doc.number }}</h1>
+
+  <form method="post" class="card shadow-sm p-3">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div class="mb-3">
+      <label class="form-label">Date (JSON)</label>
+      {{ form.data_json }}
+      <div class="form-text">
+        Temporar editezi JSON. În pasul următor îl facem formular dinamic din schema_json.
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Status</label>
+      {{ form.status }}
+      <div class="form-text">
+        Tehnician: IN_PROGRESS / READY. Manager: FINAL din butonul “Închide”.
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Salvează</button>
+      <a class="btn btn-outline-secondary" href="{% url 'documents:detail' doc.pk %}">Înapoi</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

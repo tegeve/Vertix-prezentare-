@@ -10,7 +10,8 @@
       <div class="col-lg-8">
         <h1 class="display-6 fw-semibold mb-3">{% trans "Industrial / Fabrici" %}</h1>
         <p class="lead text-muted mb-4">
-          {% trans "Ne axăm pe vânzare, reparații, instalare/retrofit, automatizare și RPA pentru mediul industrial — cu focus pe reducerea downtime-ului și creșterea productivității." %}
+          {% trans "Ne axăm pe vânzare, reparații, instalare/retrofit, automatizare și RPA pentru mediul industrial — cu
+          focus pe reducerea downtime-ului și creșterea productivității." %}
         </p>
 
         <div class="d-flex gap-2 flex-wrap">
@@ -44,14 +45,47 @@
 
   <div class="row g-4">
     {% for i in industries %}
-      <div class="col-md-6 col-lg-4">
-        <div class="card h-100 border-0 shadow-sm rounded-4">
-          <div class="card-body p-4">
-            <h5 class="fw-semibold mb-2">{{ i.title }}</h5>
-            <p class="text-muted mb-0">{{ i.short }}</p>
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-start justify-content-between gap-3">
+            <h5 class="fw-semibold mb-2">{{ i.name }}</h5>
           </div>
+
+          {# Dacă ai adăuga în viitor Industry.short, aici îl pui direct #}
+          <p class="text-muted mb-0">
+            {% if i.slug == "automotive-componente" %}
+            {% trans "Automatizări, mentenanță și retrofit pentru linii de producție și asamblare, cu focus pe
+            fiabilitate, trasabilitate și reducerea downtime-ului." %}
+            {% elif i.slug == "food-beverage" %}
+            {% trans "Soluții industriale pentru procese stabile: mentenanță, automatizare, monitorizare și raportare,
+            adaptate producției alimentare." %}
+            {% elif i.slug == "logistica-industriala" %}
+            {% trans "Optimizare fluxuri și automatizări pentru depozite și centre logistice, cu focus pe eficiență și
+            trasabilitate." %}
+            {% elif i.slug == "metal-prelucrari" %}
+            {% trans "Intervenții mecanice și electronice, retrofit și automatizări pentru utilaje și linii de
+            prelucrare, orientate pe productivitate." %}
+            {% elif i.slug == "packaging" %}
+            {% trans "Automatizare, service și modernizare utilaje de ambalare pentru creșterea productivității și
+            reducerea opririlor." %}
+            {% elif i.slug == "plastice-injectie" %}
+            {% trans "Mentenanță, reparații, retrofit și automatizări pentru procese de injecție mase plastice, cu focus
+            pe calitate și repetabilitate." %}
+            {% else %}
+            {% trans "Soluții industriale complete: vânzare, service, retrofit, automatizare și RPA." %}
+            {% endif %}
+          </p>
+
         </div>
       </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-warning mb-0">
+        {% trans "Nu există industrii configurate încă. Adaugă-le din Admin (Industries)." %}
+      </div>
+    </div>
     {% endfor %}
   </div>
 </section>
@@ -66,18 +100,18 @@
 
     <div class="row g-3">
       {% for p in pains %}
-        <div class="col-md-6 col-lg-4">
-          <div class="p-4 bg-white rounded-4 shadow-sm h-100">
-            <div class="fw-semibold">{{ p.title }}</div>
-            <div class="text-muted">{{ p.desc }}</div>
-          </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="p-4 bg-white rounded-4 shadow-sm h-100">
+          <div class="fw-semibold">{{ p.title }}</div>
+          <div class="text-muted">{{ p.desc }}</div>
         </div>
+      </div>
       {% endfor %}
     </div>
   </div>
 </section>
 
-<!-- SERVICII RECOMANDATE (link către pagina de servicii / detalii) -->
+<!-- SERVICII RECOMANDATE -->
 <section class="container py-5">
   <div class="mb-4">
     <h2 class="fw-semibold mb-2">{% trans "Servicii folosite frecvent în industrial" %}</h2>
@@ -88,7 +122,7 @@
 
   <div class="d-flex flex-wrap gap-2">
     {% for s in service_links %}
-      <a class="btn btn-outline-primary" href="{{ s.url }}">{{ s.label }}</a>
+    <a class="btn btn-outline-primary" href="{{ s.url }}">{{ s.label }}</a>
     {% endfor %}
   </div>
 </section>

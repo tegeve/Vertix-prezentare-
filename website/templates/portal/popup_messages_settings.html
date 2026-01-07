@@ -3,52 +3,101 @@
 <div class="container py-4">
 
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h4 mb-0">Setări · Mesaje Pop-up</h1>
+    <div>
+      <h1 class="h4 mb-1">Setări · Mesaje Pop-up</h1>
+      <div class="text-muted small">Gestionează mesajele afișate pe site (bannere/pop-up-uri).</div>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'portal_dashboard' %}">Înapoi la Portal</a>
   </div>
 
   <div class="row g-4">
+
+    <!-- ========================= -->
+    <!-- LISTA MESAJE EXISTENTE -->
+    <!-- ========================= -->
     <div class="col-lg-7">
-      <div class="card rounded-4">
-        <div class="card-header bg-white">
+      <div class="card rounded-4 shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
           <strong>Mesaje existente</strong>
+          <span class="text-muted small">Total: {{ messages_qs|length }}</span>
         </div>
+
         <div class="card-body">
           {% if messages_qs %}
             <div class="table-responsive">
-              <table class="table align-middle">
-                <thead>
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
                   <tr>
                     <th>Titlu</th>
-                    <th>Activ</th>
+                    <th class="text-center">Activ</th>
                     <th>Perioadă</th>
-                    <th>Prioritate</th>
-                    <th></th>
+                    <th class="text-center">Prioritate</th>
+                    <th class="text-end">Acțiuni</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                {% for m in messages_qs %}
-                  <tr>
-                    <td>
-                      <div class="fw-semibold">{{ m.title }}</div>
-                      <div class="text-muted small">{{ m.style }}</div>
-                    </td>
-                    <td>
-                      {% if m.is_enabled %}<span class="badge text-bg-success">DA</span>
-                      {% else %}<span class="badge text-bg-secondary">NU</span>{% endif %}
-                    </td>
-                    <td class="small text-muted">
-                      {{ m.start_at|default:"(fără start)" }} → {{ m.end_at|default:"(fără end)" }}
-                    </td>
-                    <td>{{ m.priority }}</td>
-                    <td class="text-end">
-                      <a class="btn btn-sm btn-outline-primary" href="{% url 'popup_message_edit' m.id %}">Editează</a>
-                      <form class="d-inline" method="post" action="{% url 'popup_message_delete' m.id %}">
-                        {% csrf_token %}
-                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Ștergi mesajul?')">Șterge</button>
-                      </form>
-                    </td>
-                  </tr>
-                {% endfor %}
+                  {% for m in messages_qs %}
+                    <tr>
+                      <td style="min-width:260px;">
+                        <div class="fw-semibold">{{ m.title }}</div>
+
+                        <div class="d-flex flex-wrap gap-2 mt-1">
+                          {% if m.style %}
+                            <span class="badge text-bg-light border">{{ m.style }}</span>
+                          {% endif %}
+                          {% if m.show_once %}
+                            <span class="badge text-bg-warning">Show once</span>
+                          {% endif %}
+                        </div>
+
+                        {% if m.body %}
+                          <div class="text-muted small mt-1">
+                            {{ m.body|truncatechars:140 }}
+                          </div>
+                        {% endif %}
+                      </td>
+
+                      <td class="text-center">
+                        {% if m.is_enabled %}
+                          <span class="badge rounded-pill text-bg-success">DA</span>
+                        {% else %}
+                          <span class="badge rounded-pill text-bg-secondary">NU</span>
+                        {% endif %}
+                      </td>
+
+                      <td class="small text-muted" style="min-width:210px;">
+                        <div>
+                          <span class="fw-semibold">Start:</span>
+                          {{ m.start_at|date:"Y-m-d H:i"|default:"(fără start)" }}
+                        </div>
+                        <div>
+                          <span class="fw-semibold">End:</span>
+                          {{ m.end_at|date:"Y-m-d H:i"|default:"(fără end)" }}
+                        </div>
+                      </td>
+
+                      <td class="text-center">
+                        <span class="badge text-bg-dark">{{ m.priority }}</span>
+                      </td>
+
+                      <td class="text-end" style="min-width:160px;">
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="{% url 'popup_message_edit' m.id %}">
+                          Editează
+                        </a>
+
+                        <form class="d-inline" method="post" action="{% url 'popup_message_delete' m.id %}">
+                          {% csrf_token %}
+                          <button type="submit"
+                                  class="btn btn-sm btn-outline-danger"
+                                  onclick="return confirm('Ștergi mesajul?');">
+                            Șterge
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
                 </tbody>
               </table>
             </div>
@@ -59,25 +108,79 @@
       </div>
     </div>
 
+    <!-- ========================= -->
+    <!-- FORM ADAUGARE MESAJ -->
+    <!-- ========================= -->
     <div class="col-lg-5">
-      <div class="card rounded-4">
+      <div class="card rounded-4 shadow-sm">
         <div class="card-header bg-white">
           <strong>Adaugă mesaj nou</strong>
         </div>
+
         <div class="card-body">
           <form method="post" class="vstack gap-3">
             {% csrf_token %}
-            {{ form.as_p }}
+
+            {# Dacă vrei stil bootstrap pe fiecare câmp, lasă form.as_p,
+               dar recomand afișare field-by-field în formular.
+               Mai jos: varianta rapidă + bootstrap minimal. #}
+
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            {% for field in form %}
+              <div>
+                <label class="form-label">
+                  {{ field.label }}
+                  {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+
+                {{ field }}
+
+                {% if field.help_text %}
+                  <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+
+                {% for err in field.errors %}
+                  <div class="text-danger small">{{ err }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+
             <button class="btn btn-primary">Salvează</button>
           </form>
+
           <div class="small text-muted mt-3">
-            Tip: dacă “Show once” e bifat, utilizatorul îl vede o singură dată în browser.
+            Tip: dacă “Show once” e bifat, utilizatorul îl vede o singură dată în browser (pe device-ul respectiv).
           </div>
         </div>
       </div>
     </div>
 
   </div>
-
 </div>
+
+<script>
+  // Bootstrapize pentru câmpurile din form (fără să-ți rescriu form-ul)
+  (function(){
+    const wrap = document.querySelector(".card-body form");
+    if(!wrap) return;
+
+    wrap.querySelectorAll("input, textarea, select").forEach((el) => {
+      if(el.type === "checkbox" || el.type === "radio") {
+        el.classList.add("form-check-input");
+        // pune checkbox-urile mai frumos
+        const parent = el.closest("div");
+        if(parent) parent.classList.add("form-check");
+        return;
+      }
+      el.classList.add("form-control");
+    });
+
+    wrap.querySelectorAll("select").forEach((el) => el.classList.add("form-select"));
+  })();
+</script>
 {% endblock %}

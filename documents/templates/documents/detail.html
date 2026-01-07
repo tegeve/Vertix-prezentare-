@@ -1,0 +1,157 @@
+{% extends "website/base.html" %}
+{% block content %}
+<div class="container py-4" style="max-width: 1100px;">
+
+  <!-- HEADER -->
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+    <div>
+      <h1 class="h4 mb-1">{{ doc.number }}</h1>
+      <div class="text-muted">
+        {{ doc.doc_type.name }} · {{ doc.get_status_display }}
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary" href="{% url 'documents:list' %}">Înapoi</a>
+
+      <a class="btn btn-outline-success" target="_blank" href="{% url 'documents:preview' doc.pk %}">
+        Preview (A4)
+      </a>
+
+      {% if can_edit and doc.status != "FINAL" and doc.status != "CANCELLED" %}
+        <a class="btn btn-primary" href="{% url 'documents:edit' doc.pk %}">Editează</a>
+      {% endif %}
+
+      {% if can_close and doc.status != "FINAL" and doc.status != "CANCELLED" %}
+        <form method="post" action="{% url 'documents:close' doc.pk %}" class="d-inline">
+          {% csrf_token %}
+          <button class="btn btn-success" type="submit"
+                  onclick="return confirm('Sigur închizi documentul? După FINAL nu se mai poate edita.');">
+            Închide (FINAL)
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <hr class="my-3">
+
+  <!-- CONTENT -->
+  <div class="row g-3">
+
+    <!-- ASIGNARE -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header">Asignare</div>
+        <div class="card-body">
+
+          <div class="mb-2">
+            <div class="text-muted small">Client</div>
+            <div class="fw-semibold">
+              {% if doc.client_user %}
+                {{ doc.client_user.company_name|default:doc.client_user.email }}
+              {% else %}—{% endif %}
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <div class="text-muted small">Owner</div>
+            <div class="fw-semibold">
+              {% if doc.owner %}{{ doc.owner.email }}{% else %}—{% endif %}
+            </div>
+          </div>
+
+          <div>
+            <div class="text-muted small">Tehnicieni</div>
+            {% with techs=doc.technicians.all %}
+              {% if techs %}
+                <ul class="mb-0">
+                  {% for t in techs %}
+                    <li>{{ t.email }}</li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <div class="text-muted">—</div>
+              {% endif %}
+            {% endwith %}
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- FISIERE -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header">Fișiere</div>
+        <div class="card-body">
+
+          <div class="d-flex flex-wrap gap-2">
+            {% if doc.docx_file %}
+              <a class="btn btn-sm btn-outline-secondary" href="{{ doc.docx_file.url }}">Descarcă DOCX</a>
+            {% else %}
+              <span class="badge text-bg-light border">DOCX: încă negenerat</span>
+            {% endif %}
+
+            {% if doc.pdf_file %}
+              <a class="btn btn-sm btn-outline-secondary" href="{{ doc.pdf_file.url }}">Descarcă PDF</a>
+            {% else %}
+              <span class="badge text-bg-light border">PDF: încă negenerat</span>
+            {% endif %}
+          </div>
+
+          <div class="text-muted small mt-3">
+            Fișierele vor fi generate automat când documentul este închis (FINAL).
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- DATE DOCUMENT -->
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Date document</span>
+
+          {% if can_edit and doc.status != "FINAL" and doc.status != "CANCELLED" %}
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'documents:edit' doc.pk %}">
+              Completează / Editează
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="card-body">
+          {% if doc.data_json %}
+            <div class="row g-3">
+              {% for k, v in doc.data_json.items %}
+                <div class="col-md-6">
+                  <div class="text-muted small">{{ k }}</div>
+                  <div class="fw-semibold">
+                    {% if v %}
+                      {{ v }}
+                    {% else %}
+                      —
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <details class="mt-3">
+              <summary class="text-muted small">Vezi JSON complet</summary>
+              <pre class="bg-light p-3 rounded mb-0 mt-2" style="white-space: pre-wrap;">{{ doc.data_json }}</pre>
+            </details>
+          {% else %}
+            <div class="text-muted">
+              Nu există date completate încă. Apasă <b>Editează</b> pentru a completa ordinul de lucru.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

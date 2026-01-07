@@ -15,6 +15,7 @@ urlpatterns += i18n_patterns(
     path("cont/", include("accounts.urls")),
     path("portal/", include("portal.urls")),
     path("", include("website.urls")),
+    path("portal/documente/", include("documents.urls", namespace="documents")),
 )
 
 if settings.DEBUG:

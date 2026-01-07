@@ -8,8 +8,8 @@ from .models import Industry, Service, Project, Post, Job, ContactMessage, About
 @admin.register(Industry, site=vertix_admin_site)
 class IndustryAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
-    search_fields = ("name", "slug")
-    list_display = ("name", "slug")
+    search_fields = ("name", "slug", "short")
+    list_display = ("name", "slug", "short")
 
 @admin.register(Service, site=vertix_admin_site)
 class ServiceAdmin(admin.ModelAdmin):

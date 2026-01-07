@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
+from django.db.models import Max
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -35,13 +36,38 @@ from .models import (
     AbuseEvent,
     BlockedIP,
 )
-from .models_chat import TicketMessage
+from .models_chat import TicketMessage, TicketMessageRead
 from .permissions import role_required
 
 
 # ============================================================
 # Helpers
 # ============================================================
+def mark_target_read(request, target_model, target_pk: int) -> None:
+    """
+    Marchează target-ul ca citit până la ultimul mesaj vizibil pentru user.
+    """
+    ct = ContentType.objects.get_for_model(target_model)
+
+    msg_qs = TicketMessage.objects.filter(content_type=ct, object_id=target_pk)
+    if not is_staff_user(request.user):
+        msg_qs = msg_qs.filter(visibility=TicketMessage.Visibility.PUBLIC)
+
+    last_msg = msg_qs.order_by("-id").first()
+    if not last_msg:
+        return
+
+    read_obj, _ = TicketMessageRead.objects.get_or_create(
+        content_type=ct,
+        object_id=target_pk,
+        user=request.user,
+        defaults={"updated_at": timezone.now()},
+    )
+
+    read_obj.last_read_message = last_msg
+    read_obj.updated_at = timezone.now()
+    read_obj.save(update_fields=["last_read_message", "updated_at"])
+
 
 def get_client_ip(request) -> Optional[str]:
     """
@@ -246,6 +272,8 @@ def ticket_edit(request, pk):
         messages.success(request, "Cererea a fost actualizată.")
         return redirect("portal_dashboard")
 
+    mark_target_read(request, Ticket, t.pk)
+
     chat_qs = _chat_messages_for_target(request, Ticket, t.pk)
 
     return render(request, "portal/ticket_edit.html", {
@@ -318,6 +346,7 @@ def public_request_edit(request, pk):
 
         return redirect("public_request_edit", pk=r.pk)
 
+    mark_target_read(request, PublicRequest, r.pk)
     chat_qs = _chat_messages_for_target(request, PublicRequest, r.pk)
 
     return render(request, "portal/public_request_edit.html", {
@@ -422,6 +451,9 @@ def _get_dashboard_items(request) -> Dict[str, Any]:
 
     items: List[Dict[str, Any]] = []
 
+    # -----------------------------
+    # 1) Construim items (cu chat_unread default 0)
+    # -----------------------------
     if show_client or show_intern:
         for t in tickets_qs:
             source = _ticket_source(t)
@@ -438,6 +470,7 @@ def _get_dashboard_items(request) -> Dict[str, Any]:
                 "assigned_name": (t.assigned_to.email if t.assigned_to else ""),
                 "created_at": t.created_at,
                 "pk": t.pk,
+                "chat_unread": 0,   # ✅ default
             })
 
     if show_public or show_client or show_intern:
@@ -460,13 +493,12 @@ def _get_dashboard_items(request) -> Dict[str, Any]:
                 "assigned_name": assigned_name,
                 "created_at": r.created_at,
                 "pk": r.pk,
+                "chat_unread": 0,   # ✅ default
             })
 
-    items_for_suggest = sorted(items, key=lambda x: x.get("created_at"), reverse=True)
-    nr_suggestions = _build_autocomplete(items_for_suggest, "nr", 80)
-    name_suggestions = _build_autocomplete(items_for_suggest, "client_name", 80)
-    phone_suggestions = _build_autocomplete(items_for_suggest, "client_phone", 80)
-
+    # -----------------------------
+    # 2) Filtrare
+    # -----------------------------
     def match(it: Dict[str, Any]) -> bool:
         if f_type in {"PUBLIC", "CLIENT", "INTERN"} and it.get("source") != f_type:
             return False
@@ -504,6 +536,19 @@ def _get_dashboard_items(request) -> Dict[str, Any]:
 
     items = [it for it in items if match(it)]
 
+    # -----------------------------
+    # 3) ✅ AICI atașăm chat_unread DUPĂ filtrare (ca să fie rapid)
+    # -----------------------------
+    attach_chat_unread_for_items(request.user, items)
+
+    # -----------------------------
+    # 4) Sortare + sugestii
+    # -----------------------------
+    items_for_suggest = sorted(items, key=lambda x: x.get("created_at"), reverse=True)
+    nr_suggestions = _build_autocomplete(items_for_suggest, "nr", 80)
+    name_suggestions = _build_autocomplete(items_for_suggest, "client_name", 80)
+    phone_suggestions = _build_autocomplete(items_for_suggest, "client_phone", 80)
+
     sort = _normalize(request.GET.get("sort")) or "created_at"
     direction = _normalize(request.GET.get("dir")) or "desc"
     if direction not in {"asc", "desc"}:
@@ -525,7 +570,6 @@ def _get_dashboard_items(request) -> Dict[str, Any]:
         "filter_public": show_public,
         "filter_client": show_client,
         "filter_intern": show_intern,
-
         "q": _normalize(request.GET.get("q")),
         "f_type": f_type,
         "f_nr": _normalize(request.GET.get("nr")),
@@ -533,18 +577,16 @@ def _get_dashboard_items(request) -> Dict[str, Any]:
         "f_phone": _normalize(request.GET.get("phone")),
         "f_status": _normalize(request.GET.get("status")),
         "f_assigned": _normalize(request.GET.get("assigned")),
-
         "date_from": date_from.isoformat() if date_from else "",
         "date_to": date_to.isoformat() if date_to else "",
         "quick": quick,
-
         "sort": sort,
         "dir": direction,
-
         "nr_suggestions": nr_suggestions,
         "name_suggestions": name_suggestions,
         "phone_suggestions": phone_suggestions,
     }
+
 
 
 # ============================================================
@@ -874,3 +916,53 @@ def tech_delete(request, pk):
         messages.success(request, "Tehnician șters.")
         return redirect("tech_list")
     return render(request, "portal/tech_confirm_delete.html", {"obj": obj})
+
+
+
+def attach_chat_unread_for_items(user: User, items: List[Dict[str, Any]]) -> None:
+    """
+    items = lista de dict-uri din dashboard:
+      {"kind":"ticket"/"public", "pk":..., ...}
+
+    Setează it["chat_unread"] = 0/1 (ai mesaje noi sau nu).
+    """
+    if not items:
+        return
+
+    ct_ticket = ContentType.objects.get_for_model(Ticket)
+    ct_public = ContentType.objects.get_for_model(PublicRequest)
+
+    msg_qs = TicketMessage.objects.all()
+    if not is_staff_user(user):
+        msg_qs = msg_qs.filter(visibility=TicketMessage.Visibility.PUBLIC)
+
+    latest = (
+        msg_qs
+        .filter(content_type_id__in=[ct_ticket.id, ct_public.id])
+        .values("content_type_id", "object_id")
+        .annotate(last_id=Max("id"))
+    )
+    latest_map = {(x["content_type_id"], int(x["object_id"])): int(x["last_id"] or 0) for x in latest}
+
+    reads = (
+        TicketMessageRead.objects
+        .filter(user=user, content_type_id__in=[ct_ticket.id, ct_public.id])
+        .values("content_type_id", "object_id", "last_read_message_id")
+    )
+    read_map = {(r["content_type_id"], int(r["object_id"])): int(r["last_read_message_id"] or 0) for r in reads}
+
+    for it in items:
+        kind = (it.get("kind") or "").strip().lower()
+        pk = int(it.get("pk") or 0)
+
+        if kind == "ticket":
+            key = (ct_ticket.id, pk)
+        else:
+            key = (ct_public.id, pk)
+
+        last_id = latest_map.get(key, 0)
+        last_read = read_map.get(key, 0)
+
+        it["chat_unread"] = 1 if last_id > last_read else 0
+
+

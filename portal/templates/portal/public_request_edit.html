@@ -75,13 +75,13 @@
           <div class="col-12">
             <label class="form-label">Documente</label>
 
-            <div id="dropzone" class="border rounded p-3 bg-light" style="cursor:pointer;">
+            <div id="dropzone_public_{{ req.id }}" class="border rounded p-3 bg-light" style="cursor:pointer;">
               <div class="fw-semibold">Trage fișiere aici (drag & drop)</div>
               <div class="text-muted small">sau click pentru a selecta. (PDF, imagini, DOC/DOCX, XLS/XLSX, TXT)</div>
-              <div id="fileList" class="small mt-2"></div>
+              <div id="fileList_public_{{ req.id }}" class="small mt-2"></div>
             </div>
 
-            <input id="fileInput" class="form-control d-none" type="file" name="attachments" multiple>
+            <input id="fileInput_public_{{ req.id }}" class="form-control d-none" type="file" name="attachments" multiple>
             <div class="form-text mt-2">Max 25MB/fișier (conform validării din view).</div>
           </div>
         </div>
@@ -139,7 +139,6 @@
                         </div>
                       </div>
 
-                      {# IMPORTANT: nu form în form. Folosim formaction. #}
                       <div class="ms-auto">
                         <button class="btn btn-outline-danger btn-sm" type="submit"
                                 formmethod="post"
@@ -182,10 +181,10 @@
 
 <script>
 (function(){
-  // ---------- Upload drag & drop pentru PublicRequest ----------
-  const dz = document.getElementById("dropzone");
-  const input = document.getElementById("fileInput");
-  const list = document.getElementById("fileList");
+  // ---------- Upload drag & drop pentru PublicRequest (ID-uri unice) ----------
+  const dz = document.getElementById("dropzone_public_{{ req.id }}");
+  const input = document.getElementById("fileInput_public_{{ req.id }}");
+  const list = document.getElementById("fileList_public_{{ req.id }}");
   if(!dz || !input || !list) return;
 
   function renderFiles(files){

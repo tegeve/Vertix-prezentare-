@@ -46,6 +46,7 @@ class Ticket(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    last_chat_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -99,7 +100,7 @@ class PublicRequest(models.Model):
     phone = models.CharField(max_length=40, blank=True)
     company = models.CharField(max_length=255, blank=True)
     company_cif = models.CharField(max_length=50, blank=True)
-
+    last_chat_at = models.DateTimeField(null=True, blank=True, db_index=True)
     description = models.TextField()
     status = models.ForeignKey(RequestStatus, null=True, blank=True, on_delete=models.SET_NULL)
     assigned_to = models.ForeignKey(

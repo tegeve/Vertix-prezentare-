@@ -1,0 +1,127 @@
+{% extends "website/base.html" %}
+{% block content %}
+<div class="container py-4" style="max-width: 1100px;">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+    <div>
+      <h1 class="h4 mb-1">{{ doc.number }} – Editare</h1>
+      <div class="text-muted small">{{ doc.doc_type.name }} · {{ doc.get_status_display }}</div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary" href="{% url 'documents:detail' doc.pk %}">Înapoi</a>
+      <a class="btn btn-outline-success" target="_blank" href="{% url 'documents:preview' doc.pk %}">
+        Preview (A4)
+      </a>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- DATE ORDIN -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-header">Date ordin</div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% for field in form %}
+            <div class="col-12 col-md-6">
+              <label class="form-label small mb-1">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <div class="text-muted small">{{ field.help_text }}</div>
+              {% endif %}
+              {% if field.errors %}
+                <div class="text-danger small">{{ field.errors }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- MATERIALE -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Materiale / Piese</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnAddRow">Adaugă rând</button>
+      </div>
+
+      <div class="card-body">
+        {{ materials_fs.management_form }}
+
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0" id="materialsTable">
+            <thead>
+              <tr>
+                <th>Denumire</th>
+                <th style="width:120px;">Cant.</th>
+                <th style="width:120px;">UM</th>
+                <th>Observații</th>
+                <th style="width:90px;" class="text-end">Șterge</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in materials_fs %}
+                <tr class="material-row">
+                  <td>{{ f.name }}</td>
+                  <td>{{ f.qty }}</td>
+                  <td>{{ f.unit }}</td>
+                  <td>{{ f.notes }}</td>
+                  <td class="text-end">
+                    <div class="form-check d-inline-flex align-items-center gap-2">
+                      {{ f.DELETE }}
+                      <span class="small text-muted">șterge</span>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if materials_fs.non_form_errors %}
+          <div class="text-danger small mt-2">{{ materials_fs.non_form_errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Salvează</button>
+      <a class="btn btn-outline-secondary" href="{% url 'documents:detail' doc.pk %}">Anulează</a>
+    </div>
+
+  </form>
+</div>
+
+<script>
+(function(){
+  const addBtn = document.getElementById("btnAddRow");
+  const table = document.getElementById("materialsTable");
+  if(!addBtn || !table) return;
+
+  addBtn.addEventListener("click", function(){
+    const tbody = table.querySelector("tbody");
+    const rows = tbody.querySelectorAll("tr.material-row");
+    if(rows.length === 0) return;
+
+    const totalInput = document.querySelector('input[name="materials-TOTAL_FORMS"]');
+    let total = parseInt(totalInput.value || "0", 10);
+
+    const last = rows[rows.length - 1];
+    const clone = last.cloneNode(true);
+
+    clone.querySelectorAll("input, select, textarea").forEach(function(el){
+      if(el.name) el.name = el.name.replace(/materials-\d+-/g, "materials-" + total + "-");
+      if(el.id) el.id = el.id.replace(/materials-\d+-/g, "materials-" + total + "-");
+
+      if(el.type === "checkbox") el.checked = false;
+      else el.value = "";
+    });
+
+    tbody.appendChild(clone);
+    totalInput.value = String(total + 1);
+  });
+})();
+</script>
+{% endblock %}
